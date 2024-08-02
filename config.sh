@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Configuring cloud from compose file and env."
+
 output=$(defang compose config)
 
 if [ -n "$BASH" ]; then

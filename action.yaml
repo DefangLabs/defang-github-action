@@ -7,23 +7,18 @@ branding:
 runs:
   using: "composite"
   steps:
-    # test by running ls
-    - name: Run ls
+    - name: Install defang
       shell: bash
-      run: ${{ github.action_path }}/run-ls.sh
+      run: . <(curl -Ls https://s.defang.io/install)
 
-    # - name: Install defang
-    #   shell: bash
-    #   run: . <(curl -Ls https://s.defang.io/install)
+    - name: Login to Defang
+      shell: bash
+      run: defang login
 
-    # - name: Login to Defang
-    #   shell: bash
-    #   run: defang login
+    - name: Deploy Config
+      shell: bash
+      run: ${{ github.action_path }}/config.sh
 
-    # - name: Deploy Config
-    #   shell: bash
-    #   run: . ./config.sh
-
-    # - name: Deploy
-    #   shell: bash
-    #   run: defang compose up -v --detach
+    - name: Deploy
+      shell: bash
+      run: defang compose up -v --detach
