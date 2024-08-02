@@ -18,7 +18,9 @@ runs:
 
     - name: Login to Defang
       shell: bash
-      run: defang login
+      run: | 
+        defang login
+        defang whoami
 
     - name: Deploy Config
       shell: bash
