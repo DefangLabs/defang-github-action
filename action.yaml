@@ -4,7 +4,7 @@ author: "Defang"
 branding:
   icon: "cloud"
   color: "blue"
-  
+
 inputs:
   cliVersion: 
     description: "The version of the defang CLI to use."
@@ -34,12 +34,12 @@ runs:
     #   run: ${{ github.action_path }}/config.sh
     #   working-directory: ${{ inputs.directory }}
 
-    - name: Deploy
+    - name: Execute
       shell: bash
       run: |
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
           defang compose config
         else
-          defang compose up -v --detach
+          defang ${{ inputs.args }}
         fi
       working-directory: ${{ inputs.directory }}
