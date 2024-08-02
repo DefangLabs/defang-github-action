@@ -1,2 +1,4 @@
-# defang-github-action
+# Defang GitHub Action
+
 A GitHub Action to deploy with Defang.
+

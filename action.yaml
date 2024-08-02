@@ -1,0 +1,29 @@
+name: "Defang Deployment Action"
+description: "Use defang to automatically deploy your application to the cloud."
+author: "Defang"
+branding:
+  icon: "cloud"
+  color: "blue"
+runs:
+  using: "composite"
+  steps:
+    # test by running ls
+    - name: Run ls
+      shell: bash
+      run: ls
+
+    # - name: Install defang
+    #   shell: bash
+    #   run: . <(curl -Ls https://s.defang.io/install)
+
+    # - name: Login to Defang
+    #   shell: bash
+    #   run: defang login
+
+    # - name: Deploy Config
+    #   shell: bash
+    #   run: . ./config.sh
+
+    # - name: Deploy
+    #   shell: bash
+    #   run: defang compose up -v --detach
