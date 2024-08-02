@@ -12,21 +12,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Store Current Directory
-      id: store-directory
-      shell: bash
-      run: echo "::set-output name=directory::$(pwd)"
-
-    - name: Change Directory
-      shell: bash
-      run: cd ${{ inputs.directory }}
-
-    - name: ls Test
-      shell: bash
-      run: |
-        pwd
-        ls -la
-
     - name: Install defang
       shell: bash
       run: . <(curl -Ls https://s.defang.io/install)
@@ -38,11 +23,9 @@ runs:
     - name: Deploy Config
       shell: bash
       run: ${{ github.action_path }}/config.sh
+      working-directory: ${{ inputs.directory }}
 
     - name: Deploy
       shell: bash
       run: defang compose up -v --detach
-
-    - name: restore-directory
-      shell: bash
-      run: cd ${{ steps.store-directory.outputs.directory }}
+      working-directory: ${{ inputs.directory }}
