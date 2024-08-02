@@ -10,7 +10,7 @@ runs:
     # test by running ls
     - name: Run ls
       shell: bash
-      run: ls
+      run: ${{ github.action_path }}/run-ls.sh
 
     # - name: Install defang
     #   shell: bash
