@@ -4,11 +4,17 @@ author: "Defang"
 branding:
   icon: "cloud"
   color: "blue"
+  
 inputs:
-  directory:
-    description: "The directory containing the compose file."
+  cliVersion: 
+    description: "The version of the defang CLI to use."
     required: false
-    default: "."
+    default: "latest"
+  args:
+    description: "The arguments to pass to the defang CLI."
+    required: false
+    default: "compose up"
+
 runs:
   using: "composite"
   steps:
@@ -22,10 +28,11 @@ runs:
         defang login
         defang whoami
 
-    - name: Deploy Config
-      shell: bash
-      run: ${{ github.action_path }}/config.sh
-      working-directory: ${{ inputs.directory }}
+    # We shouldn't need this once env var support is in.
+    # - name: Deploy Config
+    #   shell: bash
+    #   run: ${{ github.action_path }}/config.sh
+    #   working-directory: ${{ inputs.directory }}
 
     - name: Deploy
       shell: bash

@@ -22,7 +22,8 @@ jobs:
     - name: Deploy
       uses: DefangLabs/defang-github-action@main
       with:
-        directory: ./test
+        version: "latest"
+        args: "compose up -e DEFANG_GH_ACTION_TEST_MESSAGE" # TODO: need to get this working
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
         DEFANG_INTERNAL_TEST: dfng-test
