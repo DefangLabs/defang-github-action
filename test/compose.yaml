@@ -5,4 +5,4 @@ services:
       - "3000:3000"
     environment:
       PORT: 3000
-      MESSAGE:
+      DEFANG_GH_ACTION_TEST_MESSAGE:

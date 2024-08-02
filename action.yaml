@@ -29,5 +29,10 @@ runs:
 
     - name: Deploy
       shell: bash
-      run: defang compose up -v --detach
+      run: |
+        if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
+          defang compose config
+        else
+          defang compose up -v --detach
+        fi
       working-directory: ${{ inputs.directory }}

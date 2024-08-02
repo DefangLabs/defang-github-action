@@ -24,8 +24,8 @@ jobs:
       with:
         directory: ./test
       env:
-        MESSAGE: ${{ secrets.MESSAGE }}
+        DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
+        DEFANG_INTERNAL_TEST: dfng-test
 
     - name: Teardown
-      run: defang compose down
-      working-directory: ./test
+      run: defang config rm DEFANG_GH_ACTION_TEST_MESSAGE
