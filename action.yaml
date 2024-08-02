@@ -21,6 +21,12 @@ runs:
       shell: bash
       run: cd ${{ inputs.directory }}
 
+    - name: ls Test
+      shell: bash
+      run: |
+        pwd
+        ls -la
+
     - name: Install defang
       shell: bash
       run: . <(curl -Ls https://s.defang.io/install)
