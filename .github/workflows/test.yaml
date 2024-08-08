@@ -25,7 +25,7 @@ jobs:
     - name: Deploy
       uses: DefangLabs/defang-github-action@main
       with:
-        cliVersion: v0.5.38
+        cliVersion: v0.5.37
         configEnvVars: "DEFANG_GH_ACTION_TEST_MESSAGE"
         cwd: "./test"
       env:
