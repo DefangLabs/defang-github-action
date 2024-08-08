@@ -26,7 +26,7 @@ runs:
       shell: bash
       run: . <(curl -Ls https://s.defang.io/install)
       env:
-        DEFANG_CLI_VERSION: ${{ inputs['cli-version'] }}
+        DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
 
     - name: Login to Defang
       shell: bash
