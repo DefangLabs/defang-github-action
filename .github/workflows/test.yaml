@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch: 
   schedule:
     - cron: '0 0 * * *'
@@ -22,7 +25,9 @@ jobs:
     - name: Deploy
       uses: DefangLabs/defang-github-action@main
       with:
-        directory: ./test
+        cliVersion: v0.5.38
+        configEnvVars: "DEFANG_GH_ACTION_TEST_MESSAGE"
+        cwd: "./test"
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
         DEFANG_INTERNAL_TEST: dfng-test
