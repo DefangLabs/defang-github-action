@@ -1,27 +1,27 @@
 #!/bin/bash
 
-echo "Configuring cloud from compose file and env."
+# CONFIG_ENV_VARS is a space separated list of environment variables. i.e. "ENV_VAR1 ENV_VAR2 ENV_VAR3"
 
-output=$(defang compose config)
-
-if [ -n "$BASH" ]; then
-    sources=$(echo "$output" | grep 'source:' | awk '{print $3}')
-    for source in $sources; do
-        if [ -z "${!source}" ]; then
-            echo "No value found for $source in environment."
-        else
-            echo "Setting $source"
-            defang config set -T "$source=${!source}"
-        fi
-    done
-elif [ -n "$ZSH_VERSION" ]; then
-    sources=($(echo "$output" | grep 'source:' | awk '{print $3}'))
-    for source in $sources; do
-        if [ -z "${(P)source}" ]; then
-            echo "No value found for $source in environment."
-        else
-            echo "Setting $source"
-            defang config set -T "$source=${(P)source}"
-        fi
-    done
+if [ -z "$CONFIG_ENV_VARS" ]; then
+    echo "No environment variables to set."
+    echo "Moving on..."
+    exit 0
 fi
+
+echo "Setting config from environment variables..."
+
+# Function to handle setting the environment variables
+set_env_var() {
+    local source=$1
+
+    echo "Updating $source"
+    defang config set -e $source
+}
+
+# Split the CONFIG_ENV_VARS string by whitespace
+IFS=' ' read -r -a sources <<< "$CONFIG_ENV_VARS"
+
+# Iterate over the sources and set the environment variables
+for source in "${sources[@]}"; do
+    set_env_var "$source"
+done
