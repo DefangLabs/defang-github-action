@@ -1,5 +1,5 @@
 name: "Defang Deployment Action"
-description: "Use defang to automatically deploy your application to the cloud."
+description: "Use Defang to automatically deploy your application to the cloud."
 author: "Defang"
 branding:
   icon: "cloud"
