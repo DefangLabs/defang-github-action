@@ -6,7 +6,7 @@ A GitHub Action to deploy with Defang. Use this action to deploy your applicatio
 
 The simplest usage is to deploy a compose-based project to the Defang Playground. This is done by adding the following to your GitHub workflow, assuming you have a `compose.yaml` file in the root of your repository.
 
-To do so, just add the following to your GitHub workflow (note the permissions and the Deploy step):
+To do so, just add a job like the following to your GitHub workflow (note the permissions and the Deploy step):
 
 ```yaml
 jobs:
@@ -31,15 +31,9 @@ Defang allows you to [securely manage configuration values](https://docs.defang.
 ```yaml
 jobs:
   test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
+    # [...]
     steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v4
-
+      # [...]
     - name: Deploy
       uses: DefangLabs/defang-github-action@v1
       with:
@@ -56,6 +50,45 @@ If your compose file is in a different directory than your project root, you can
 ```yaml
 jobs:
   test:
+    # [...]
+    steps:
+      # [...]
+    - name: Deploy
+      uses: DefangLabs/defang-github-action@v1
+      with:
+        cwd: "./test"
+```
+
+### Specifying the CLI Version
+
+If you want to use a specific version of the Defang CLI, you can specify it using the `cliVersion` input.
+
+```yaml
+jobs:
+  test:
+    # [...]
+    steps:
+      # [...]
+    - name: Deploy
+      uses: DefangLabs/defang-github-action@v1
+      with:
+        cliVersion: v0.5.38
+```
+
+### Full Example
+
+Here is a full example of a GitHub workflow that does everything we've discussed so far:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -66,10 +99,11 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1
+      uses: DefangLabs/defang-github-action@main
       with:
+        cliVersion: v0.5.38
+        configEnvVars: "DEFANG_GH_ACTION_TEST_MESSAGE"
         cwd: "./test"
-        configEnvVars: "API_KEY DB_CONNECTION_STRING"
       env:
         API_KEY: ${{ secrets.API_KEY }}
         DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
