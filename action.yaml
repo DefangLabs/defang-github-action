@@ -6,11 +6,11 @@ branding:
   color: "blue"
 
 inputs:
-  cliVersion:
+  cli-version:
     description: "The version of the Defang CLI to use."
     required: false
     default: ""
-  configEnvVars:
+  config-env-vars:
     description: "Environment variables deploy as config. Format: 'VAR1 VAR2 VAR3'"
     required: false
     default: ""
@@ -26,7 +26,7 @@ runs:
       shell: bash
       run: . <(curl -Ls https://s.defang.io/install)
       env:
-        DEFANG_CLI_VERSION: ${{ inputs.cliVersion }}
+        DEFANG_CLI_VERSION: ${{ inputs['cli-version'] }}
 
     - name: Login to Defang
       shell: bash
@@ -39,7 +39,7 @@ runs:
       run: ${{ github.action_path }}/config.sh
       working-directory: ${{ inputs.cwd }}
       env:
-        CONFIG_ENV_VARS: ${{ inputs.configEnvVars }}
+        CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
 
     - name: Execute
       shell: bash
