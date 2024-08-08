@@ -24,7 +24,9 @@ runs:
   steps:
     - name: Install defang
       shell: bash
-      run: . <(curl -Ls https://s.defang.io/install)
+      run: |
+        echo "Specified version is: $DEFANG_INSTALL_VERSION"
+        . <(curl -Ls https://s.defang.io/install)
       env:
         DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
 
