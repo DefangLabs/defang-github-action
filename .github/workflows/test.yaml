@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy
-      uses: DefangLabs/defang-github-action@env-vars
+      uses: DefangLabs/defang-github-action@main
       with:
         cliVersion: v0.5.38
         configEnvVars: "DEFANG_GH_ACTION_TEST_MESSAGE"
