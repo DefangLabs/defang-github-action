@@ -102,7 +102,7 @@ jobs:
       uses: DefangLabs/defang-github-action@main
       with:
         cliVersion: v0.5.38
-        configEnvVars: "DEFANG_GH_ACTION_TEST_MESSAGE"
+        configEnvVars: "API_KEY DB_CONNECTION_STRING"
         cwd: "./test"
       env:
         API_KEY: ${{ secrets.API_KEY }}
