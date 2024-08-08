@@ -6,14 +6,18 @@ branding:
   color: "blue"
 
 inputs:
-  cliVersion: 
-    description: "The version of the defang CLI to use."
+  cliVersion:
+    description: "The version of the Defang CLI to use."
     required: false
-    default: "latest"
-  args:
-    description: "The arguments to pass to the defang CLI."
+    default: ""
+  configEnvVars:
+    description: "Environment variables deploy as config. Format: 'VAR1 VAR2 VAR3'"
     required: false
-    default: "compose up"
+    default: ""
+  cwd:
+    description: "The directory containing the compose file to deploy."
+    required: false
+    default: "."
 
 runs:
   using: "composite"
@@ -21,6 +25,8 @@ runs:
     - name: Install defang
       shell: bash
       run: . <(curl -Ls https://s.defang.io/install)
+      env:
+        DEFANG_CLI_VERSION: ${{ inputs.cliVersion }}
 
     - name: Login to Defang
       shell: bash
@@ -28,11 +34,12 @@ runs:
         defang login
         defang whoami
 
-    # We shouldn't need this once env var support is in.
-    # - name: Deploy Config
-    #   shell: bash
-    #   run: ${{ github.action_path }}/config.sh
-    #   working-directory: ${{ inputs.directory }}
+    - name: Deploy Config
+      shell: bash
+      run: ${{ github.action_path }}/config.sh
+      working-directory: ${{ inputs.cwd }}
+      env:
+        CONFIG_ENV_VARS: ${{ inputs.configEnvVars }}
 
     - name: Execute
       shell: bash
@@ -40,6 +47,6 @@ runs:
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
           defang compose config
         else
-          defang ${{ inputs.args }}
+          defang compose up
         fi
-      working-directory: ${{ inputs.directory }}
+      working-directory: ${{ inputs.cwd }}
