@@ -1,0 +1,4 @@
+services:
+  web:
+    environment:
+      DEFANG_GH_ACTION_TEST_MESSAGE:
