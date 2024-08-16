@@ -18,6 +18,10 @@ inputs:
     description: "The directory containing the compose file to deploy."
     required: false
     default: "."
+  compose-files:
+    description: "The compose files to deploy. Format 'file1 file2 file3'"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -44,9 +48,16 @@ runs:
     - name: Execute
       shell: bash
       run: |
+        params=()
+        for filename in ${{ inputs['compose-files'] }}; do
+            params+=("-f")
+            params+=("$filename")
+        done
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
-          defang compose config
+          echo defang compose "${params[@]}" config
+          defang compose "${params[@]}" config
         else
-          defang compose up
+          echo defang compose "${params[@]}" up
+          defang compose "${params[@]}" up
         fi
       working-directory: ${{ inputs.cwd }}
