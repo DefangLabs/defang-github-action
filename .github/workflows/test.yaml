@@ -29,6 +29,7 @@ jobs:
         config-env-vars: "DEFANG_GH_ACTION_TEST_MESSAGE"
         cwd: "./test"
         compose-files: "compose.yaml compose.prod.yaml"
+        behavior: "staging"
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
         DEFANG_INTERNAL_TEST: dfng-test
