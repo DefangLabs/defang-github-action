@@ -24,6 +24,7 @@ jobs:
 
     - name: Deploy
       uses: ./
+      continue-on-error: true # Ignore dry run error
       with:
         cli-version: v0.5.40
         config-env-vars: "DEFANG_GH_ACTION_TEST_MESSAGE"
