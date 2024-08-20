@@ -62,6 +62,7 @@ runs:
         fi
 
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
+          # `defang compose up --dry-run` is used for testing as --behavior flag is only available to the "compose up" command
           echo defang compose "${params[@]}" up --dry-run
           defang compose "${params[@]}" up --dry-run
         else
