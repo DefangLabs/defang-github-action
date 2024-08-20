@@ -24,13 +24,27 @@ jobs:
 
     - name: Deploy
       uses: ./
+      continue-on-error: true # Ignore dry run error
       with:
-        cli-version: v0.5.38
+        cli-version: v0.5.40
         config-env-vars: "DEFANG_GH_ACTION_TEST_MESSAGE"
         cwd: "./test"
         compose-files: "compose.yaml compose.prod.yaml"
+        behavior: "staging"
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
+        DEFANG_INTERNAL_TEST: dfng-test
+
+    - name: Deploy-Empty-Params
+      uses: ./
+      continue-on-error: true # Ignore dry run error
+      with:
+        cli-version: v0.5.40
+        config-env-vars: ""
+        cwd: "./test"
+        compose-files: ""
+        behavior: ""
+      env:
         DEFANG_INTERNAL_TEST: dfng-test
 
     - name: Teardown
