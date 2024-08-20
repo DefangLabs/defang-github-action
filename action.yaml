@@ -57,7 +57,7 @@ runs:
             params+=("-f")
             params+=("$filename")
         done
-        if [[ -n ${{ inputs['behavior'] }} ]]; then
+        if [[ -n "${{ inputs['behavior'] }}" ]]; then
           params+=("--behavior=${{ inputs['behavior'] }}")
         fi
 
