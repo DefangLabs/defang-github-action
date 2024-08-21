@@ -32,13 +32,13 @@ runs:
   steps:
     - name: Install defang
       shell: bash
-      run: . <(curl -Ls https://s.defang.io/install)
+      run: . <(curl -Lf https://s.defang.io/install || echo return $?)
       env:
         DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
 
     - name: Login to Defang
       shell: bash
-      run: | 
+      run: |
         defang login
         defang whoami
 
