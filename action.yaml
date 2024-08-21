@@ -32,7 +32,7 @@ runs:
   steps:
     - name: Install defang
       shell: bash
-      run: . <(curl -Lf https://s.defang.io/install || echo return $?)
+      run: . <(curl -Lf https://raw.githubusercontent.com/DefangLabs/defang/main/src/bin/install || echo return $?)
       env:
         DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
 
