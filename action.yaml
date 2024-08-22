@@ -44,7 +44,18 @@ runs:
 
     - name: Deploy Config
       shell: bash
-      run: ${{ github.action_path }}/config.sh
+      run: |
+        # Iterate over the sources and set the environment variables
+        params=()
+        for filename in ${{ inputs['compose-files'] }}; do
+            params+=("-f")
+            params+=("$filename")
+        done
+        for source in $CONFIG_ENV_VARS; do
+          echo "Updating $source"
+          echo defang config "${params[@]}" set -e $source
+          defang config "${params[@]}" set -e $source
+        done
       working-directory: ${{ inputs.cwd }}
       env:
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
