@@ -35,6 +35,7 @@ runs:
       run: . <(curl -Lf https://raw.githubusercontent.com/DefangLabs/defang/main/src/bin/install || echo return $?)
       env:
         DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # avoid rate-limits
 
     - name: Login to Defang
       shell: bash
