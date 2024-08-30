@@ -22,10 +22,10 @@ inputs:
     description: "The compose files to deploy. Format 'file1 file2 file3'"
     required: false
     default: ""
-  behavior:
-    description: "The behavior of the deployment. Options: 'development', 'staging', 'production'"
+  mode:
+    description: "The deployment mode. Options: 'development', 'staging', 'production'"
     required: false
-    default: "development"
+    default: ""
 
 runs:
   using: "composite"
@@ -69,12 +69,12 @@ runs:
             params+=("-f")
             params+=("$filename")
         done
-        if [[ -n "${{ inputs['behavior'] }}" ]]; then
-          params+=("--behavior=${{ inputs['behavior'] }}")
+        if [[ -n "${{ inputs['mode'] }}" ]]; then
+          params+=("--mode=${{ inputs['mode'] }}")
         fi
 
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
-          # `defang compose up --dry-run` is used for testing as --behavior flag is only available to the "compose up" command
+          # `defang compose up --dry-run` is used for testing as --mode flag is only available to the "compose up" command
           echo defang compose "${params[@]}" up --dry-run
           defang compose "${params[@]}" up --dry-run
         else
