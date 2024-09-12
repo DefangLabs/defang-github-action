@@ -26,6 +26,10 @@ inputs:
     description: "The deployment mode. Options: 'development', 'staging', 'production'"
     required: false
     default: ""
+  provider:
+    description: "The cloud provider to deploy to. Options: 'aws', 'defang'"
+    required: false
+    default: "defang"
 
 runs:
   using: "composite"
@@ -75,10 +79,10 @@ runs:
 
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
           # `defang compose up --dry-run` is used for testing as --mode flag is only available to the "compose up" command
-          echo defang compose "${params[@]}" up --dry-run
-          defang compose "${params[@]}" up --dry-run
+          echo defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up --dry-run
+          defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up --dry-run
         else
-          echo defang compose "${params[@]}" up
-          defang compose "${params[@]}" up
+          echo defang --provider=${{ inputs['provider'] }}  compose "${params[@]}" up
+          defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up
         fi
       working-directory: ${{ inputs.cwd }}
