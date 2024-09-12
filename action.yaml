@@ -22,10 +22,10 @@ inputs:
     description: "The compose files to deploy. Format 'file1 file2 file3'"
     required: false
     default: ""
-  behavior:
-    description: "The behavior of the deployment. Options: 'development', 'staging', 'production'"
+  mode:
+    description: "The deployment mode. Options: 'development', 'staging', 'production'"
     required: false
-    default: "development"
+    default: ""
   provider:
     description: "The cloud provider to deploy to. Options: 'aws', 'defang'"
     required: false
@@ -39,6 +39,7 @@ runs:
       run: . <(curl -Lf https://raw.githubusercontent.com/DefangLabs/defang/main/src/bin/install || echo return $?)
       env:
         DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
+        GH_TOKEN: ${{ github.token }} # avoid rate-limits
 
     - name: Login to Defang
       shell: bash
@@ -72,16 +73,16 @@ runs:
             params+=("-f")
             params+=("$filename")
         done
-        if [[ -n "${{ inputs['behavior'] }}" ]]; then
-          params+=("--behavior=${{ inputs['behavior'] }}")
+        if [[ -n "${{ inputs['mode'] }}" ]]; then
+          params+=("--mode=${{ inputs['mode'] }}")
         fi
 
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
-          # `defang compose up --dry-run` is used for testing as --behavior flag is only available to the "compose up" command
+          # `defang compose up --dry-run` is used for testing as --mode flag is only available to the "compose up" command
           echo defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up --dry-run
-          defang compose "${params[@]}" up --dry-run
+          defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up --dry-run
         else
           echo defang --provider=${{ inputs['provider'] }}  compose "${params[@]}" up
-          defang compose "${params[@]}" up
+          defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up
         fi
       working-directory: ${{ inputs.cwd }}

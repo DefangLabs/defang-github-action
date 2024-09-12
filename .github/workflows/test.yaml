@@ -6,8 +6,8 @@ on:
       - main
   pull_request:
     branches:
-      - main
-  workflow_dispatch: 
+      - '**'
+  workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
 
@@ -30,7 +30,7 @@ jobs:
         config-env-vars: "DEFANG_GH_ACTION_TEST_MESSAGE"
         cwd: "./test"
         compose-files: "compose.yaml compose.prod.yaml"
-        behavior: "staging"
+        mode: "staging"
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
         DEFANG_INTERNAL_TEST: dfng-test
@@ -43,7 +43,7 @@ jobs:
         config-env-vars: ""
         cwd: "./test"
         compose-files: ""
-        behavior: ""
+        mode: ""
       env:
         DEFANG_INTERNAL_TEST: dfng-test
 
