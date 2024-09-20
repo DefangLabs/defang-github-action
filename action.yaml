@@ -41,13 +41,19 @@ runs:
         DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
         GH_TOKEN: ${{ github.token }} # avoid rate-limits
 
+    - name: Set Defang environment variables
+      shell: bash
+      run: |
+        echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV
+        echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV
+
     - name: Login to Defang
       shell: bash
       run: |
         defang login
         defang whoami
 
-    - name: Deploy Config
+    - name: Defang Config Set
       shell: bash
       run: |
         # Iterate over the sources and set the environment variables
@@ -58,15 +64,16 @@ runs:
         done
         for source in $CONFIG_ENV_VARS; do
           echo "Updating $source"
-          echo defang --provider=${{ inputs['provider'] }} config "${params[@]}" set -e $source
-          defang --provider=${{ inputs['provider'] }} config "${params[@]}" set -e $source
+          echo defang config "${params[@]}" set -e $source
+          defang config "${params[@]}" set -e $source
         done
       working-directory: ${{ inputs.cwd }}
       env:
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
 
-    - name: Execute
+    - name: Defang Compose Up
       shell: bash
+      working-directory: ${{ inputs.cwd }}
       run: |
         params=()
         for filename in ${{ inputs['compose-files'] }}; do
@@ -79,10 +86,9 @@ runs:
 
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
           # `defang compose up --dry-run` is used for testing as --mode flag is only available to the "compose up" command
-          echo defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up --dry-run
-          defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up --dry-run
+          echo defang compose "${params[@]}" up --dry-run
+          defang compose "${params[@]}" up --dry-run
         else
-          echo defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up
-          defang --provider=${{ inputs['provider'] }} compose "${params[@]}" up
+          echo defang compose "${params[@]}" up
+          defang compose "${params[@]}" up
         fi
-      working-directory: ${{ inputs.cwd }}
