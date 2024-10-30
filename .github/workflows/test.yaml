@@ -31,9 +31,9 @@ jobs:
         cwd: "./test"
         compose-files: "compose.yaml compose.prod.yaml"
         mode: "staging"
+        command: "compose up --dry-run"
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
-        DEFANG_INTERNAL_TEST: dfng-test
 
     - name: Deploy-Empty-Params
       uses: ./
@@ -44,8 +44,7 @@ jobs:
         cwd: "./test"
         compose-files: ""
         mode: ""
-      env:
-        DEFANG_INTERNAL_TEST: dfng-test
+        command: "compose up --dry-run --project-name github-action-test"
 
     - name: Teardown
       run: defang config rm DEFANG_GH_ACTION_TEST_MESSAGE

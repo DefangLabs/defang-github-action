@@ -90,11 +90,6 @@ runs:
           params+=("--mode=${{ inputs['mode'] }}")
         fi
 
-        if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
-          # `--dry-run` is used for testing as --mode flag is only available to the "compose up" command
-          params+=("--dry-run")
-        fi
-
         echo defang $COMMAND "${params[@]}"
         defang $COMMAND "${params[@]}"
       env:
