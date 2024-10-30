@@ -27,9 +27,13 @@ inputs:
     required: false
     default: ""
   provider:
-    description: "The cloud provider to deploy to. Options: 'aws', 'defang'"
+    description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean'"
     required: false
     default: "defang"
+  command:
+    description: "The command to run."
+    required: false
+    default: "compose up"
 
 runs:
   using: "composite"
@@ -55,6 +59,7 @@ runs:
 
     - name: Defang Config Set
       shell: bash
+      if: ${{ inputs['config-env-vars'] != "" }}
       run: |
         # Iterate over the sources and set the environment variables
         params=()
@@ -71,7 +76,8 @@ runs:
       env:
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
 
-    - name: Defang Compose Up
+    - name: Defang ${{ inputs['command'] }}
+      if: ${{ inputs['command'] != "" }}
       shell: bash
       working-directory: ${{ inputs.cwd }}
       run: |
@@ -85,10 +91,11 @@ runs:
         fi
 
         if [[ "${DEFANG_INTERNAL_TEST}" == "dfng-test" ]]; then
-          # `defang compose up --dry-run` is used for testing as --mode flag is only available to the "compose up" command
-          echo defang compose "${params[@]}" up --dry-run
-          defang compose "${params[@]}" up --dry-run
-        else
-          echo defang compose "${params[@]}" up
-          defang compose "${params[@]}" up
+          # `--dry-run` is used for testing as --mode flag is only available to the "compose up" command
+          params+=("--dry-run")
         fi
+
+        echo defang $COMMAND "${params[@]}"
+        defang $COMMAND "${params[@]}"
+      env:
+        COMMAND: ${{ inputs['command'] }}
