@@ -26,7 +26,7 @@ jobs:
 
 ### Managing Config Values
 
-Defang allows you to [securely manage configuration values](https://docs.defang.io/docs/concepts/configuration). You can store your config using [GitHub Actions Secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) and then pass them through to the Defang action. 
+Defang allows you to [securely manage configuration values](https://docs.defang.io/docs/concepts/configuration). You can store your config using [GitHub Actions Secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) and then pass them through to the Defang action.
 
 To publish a secret stored in GitHub to the cloud as a secure config value with defang, you need to do two things:
 
@@ -81,6 +81,23 @@ jobs:
       uses: DefangLabs/defang-github-action@v1.1.0
       with:
         cli-version: v0.5.38
+```
+
+### Customizing the Defang Command
+
+If you want to customize the Defang command that is run, you can specify it using the `command` input.
+This is useful if you want to run a command other than `compose up` or if you want to pass additional arguments to the command.
+
+```yaml
+jobs:
+  test:
+    # [...]
+    steps:
+      # [...]
+    - name: Deploy
+      uses: DefangLabs/defang-github-action@v1.1.0
+      with:
+        command: "compose up --project-name my-project"
 ```
 
 ### Full Example

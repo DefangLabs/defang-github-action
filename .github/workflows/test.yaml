@@ -30,22 +30,20 @@ jobs:
         config-env-vars: "DEFANG_GH_ACTION_TEST_MESSAGE"
         cwd: "./test"
         compose-files: "compose.yaml compose.prod.yaml"
-        mode: "staging"
+        mode: ""
+        command: "compose up --dry-run"
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
-        DEFANG_INTERNAL_TEST: dfng-test
 
     - name: Deploy-Empty-Params
       uses: ./
       continue-on-error: true # Ignore dry run error
       with:
-        cli-version: v0.5.40
         config-env-vars: ""
         cwd: "./test"
         compose-files: ""
-        mode: ""
-      env:
-        DEFANG_INTERNAL_TEST: dfng-test
+        mode: "staging"
+        command: "compose up --dry-run --project-name github-action-test"
 
     - name: Teardown
       run: defang config rm DEFANG_GH_ACTION_TEST_MESSAGE
