@@ -30,7 +30,7 @@ jobs:
         config-env-vars: "DEFANG_GH_ACTION_TEST_MESSAGE"
         cwd: "./test"
         compose-files: "compose.yaml compose.prod.yaml"
-        mode: "staging"
+        mode: ""
         command: "compose up --dry-run"
       env:
         DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
@@ -39,11 +39,10 @@ jobs:
       uses: ./
       continue-on-error: true # Ignore dry run error
       with:
-        cli-version: v0.5.40
         config-env-vars: ""
         cwd: "./test"
         compose-files: ""
-        mode: ""
+        mode: "staging"
         command: "compose up --dry-run --project-name github-action-test"
 
     - name: Teardown
