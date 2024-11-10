@@ -129,6 +129,10 @@ jobs:
         cli-version: v0.5.43
         config-env-vars: "API_KEY DB_CONNECTION_STRING"
         cwd: "./test"
+        compose-files: "./docker-compose.yaml"
+        mode: "staging"
+        provider: "aws"
+        command: "compose up"
       env:
         API_KEY: ${{ secrets.API_KEY }}
         DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
