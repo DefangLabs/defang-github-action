@@ -1,6 +1,6 @@
 name: "Defang Deployment Action"
 description: "Use Defang to automatically deploy your application to the cloud."
-author: "Defang"
+author: "DefangLabs"
 branding:
   icon: "cloud"
   color: "blue"
