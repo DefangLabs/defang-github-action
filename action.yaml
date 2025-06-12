@@ -55,6 +55,7 @@ runs:
       shell: bash
       run: |
         defang login
+        defang terms --agree-tos
         defang whoami
 
     - name: Defang Config Set
