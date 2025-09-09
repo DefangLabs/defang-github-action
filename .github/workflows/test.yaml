@@ -6,10 +6,10 @@ on:
       - main
   pull_request:
     branches:
-      - '**'
+      - "**"
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
+  # schedule:
+  #   - cron: "0 0 * * *" # daily at midnight
 
 jobs:
   test:
@@ -19,31 +19,35 @@ jobs:
       id-token: write
 
     steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-    - name: Deploy
-      uses: ./
-      continue-on-error: true # Ignore dry run error
-      with:
-        cli-version: v0.5.40
-        config-env-vars: "DEFANG_GH_ACTION_TEST_MESSAGE"
-        cwd: "./test"
-        compose-files: "compose.yaml compose.prod.yaml"
-        mode: ""
-        command: "compose up --dry-run"
-      env:
-        DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
+      - name: Deploy
+        uses: ./
+        with:
+          cli-version: v0.5.40
+          config-env-vars: |
+            DEFANG_GH_ACTION_TEST_ENV
+            DEFANG_GH_ACTION_TEST_MESSAGE
+          cwd: "./test"
+          compose-files: |
+            compose.yaml
+            compose.prod.yaml
+          mode: ""
+          command: "compose help"
+        env:
+          DEFANG_GH_ACTION_TEST_ENV: "foo"
+          DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
 
-    - name: Deploy-Empty-Params
-      uses: ./
-      continue-on-error: true # Ignore dry run error
-      with:
-        config-env-vars: ""
-        cwd: "./test"
-        compose-files: ""
-        mode: "staging"
-        command: "compose up --dry-run --project-name github-action-test"
+      - name: Deploy-Empty-Params
+        uses: ./
+        continue-on-error: true # Ignore dry run error
+        with:
+          config-env-vars: ""
+          cwd: "./test"
+          compose-files: ""
+          mode: "staging"
+          command: "compose up --dry-run --project-name github-action-test"
 
-    - name: Teardown
-      run: defang config rm DEFANG_GH_ACTION_TEST_MESSAGE
+      - name: Teardown
+        run: defang config rm DEFANG_GH_ACTION_TEST_MESSAGE
