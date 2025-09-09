@@ -31,7 +31,7 @@ Defang allows you to [securely manage configuration values](https://docs.defang.
 To publish a secret stored in GitHub to the cloud as a secure config value with defang, you need to do two things:
 
   1. Use the `env` section of the step to pass the value of the secrets to environment variables that match the names of the config values in your Compose file.
-  2. Specify the names of the environment variables you want to push to the cloud as config values in the `config-env-vars` input.
+  2. Specify the names of the environment variables you want to push to the cloud as config values in the `config-env-vars` input, either whitespace delimited or as a YAML literal block scalar (`|`).
 
 The second step is to make sure that we only publish the secrets you explicitly tell us to. For example, you could have a secret in an env var at the job level, instead of the step level that you might not want to push to the cloud, even if it is in a secure store.
 
@@ -45,7 +45,9 @@ jobs:
       uses: DefangLabs/defang-github-action@v1.2.0
       with:
         # Note: you need to tell Defang which env vars to push to the cloud as config values here. Only these ones will be pushed up.
-        config-env-vars: "API_KEY DB_CONNECTION_STRING"
+        config-env-vars: |
+          API_KEY
+          DB_CONNECTION_STRING
       env:
         API_KEY: ${{ secrets.API_KEY }}
         DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
