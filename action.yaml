@@ -7,7 +7,7 @@ branding:
 
 inputs:
   cli-version:
-    description: "The version of the Defang CLI to use."
+    description: "The version of the Defang CLI to use. Defaults to the latest stable release."
     required: false
     default: ""
   config-env-vars:
@@ -27,7 +27,7 @@ inputs:
     required: false
     default: ""
   provider:
-    description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean'"
+    description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean', 'gcp'"
     required: false
     default: "defang"
   command:
