@@ -4,17 +4,4 @@
 # Learn more about CODEOWNERS: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Global owners - these users/teams will be requested for review on all PRs unless a more specific rule applies
-* @lionello @DefangLabs/maintainers
-
-# Action definition and core functionality
-action.yaml @lionello @edwardrf
-
-# Documentation
-README.md @raphaeltm @lionello
-LICENSE @lionello
-
-# GitHub workflows and CI/CD
-.github/ @lionello @edwardrf
-
-# Test files and examples
-test/ @edwardrf @edw-defang @lionello
+* @DefangLabs/dev
