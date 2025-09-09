@@ -63,7 +63,7 @@ runs:
       run: |
         # Iterate over the sources and set the environment variables
         params=()
-        for filename in ${{ inputs['compose-files'] }}; do
+        for filename in $COMPOSE_FILES; do
             params+=("-f")
             params+=("$filename")
         done
@@ -74,6 +74,7 @@ runs:
         done
       working-directory: ${{ inputs.cwd }}
       env:
+        COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
 
     - name: Defang ${{ inputs['command'] }}
@@ -82,7 +83,7 @@ runs:
       working-directory: ${{ inputs.cwd }}
       run: |
         params=()
-        for filename in ${{ inputs['compose-files'] }}; do
+        for filename in $COMPOSE_FILES; do
             params+=("-f")
             params+=("$filename")
         done
@@ -94,3 +95,4 @@ runs:
         defang $COMMAND "${params[@]}"
       env:
         COMMAND: ${{ inputs['command'] }}
+        COMPOSE_FILES: ${{ inputs['compose-files'] }}
