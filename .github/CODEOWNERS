@@ -4,4 +4,4 @@
 # Learn more about CODEOWNERS: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Global owners - these users/teams will be requested for review on all PRs unless a more specific rule applies
-* @DefangLabs/dev
+* @DefangLabs/devs
