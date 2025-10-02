@@ -55,7 +55,6 @@ runs:
       shell: bash
       run: |
         defang login
-        defang whoami
 
     - name: Defang Config Set
       shell: bash
