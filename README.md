@@ -135,6 +135,7 @@ jobs:
         mode: "staging"
         provider: "aws"
         command: "compose up"
+        verbose: true
       env:
         API_KEY: ${{ secrets.API_KEY }}
         DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
