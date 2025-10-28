@@ -34,6 +34,10 @@ inputs:
     description: "The command to run."
     required: false
     default: "compose up"
+  verbose:
+    description: "Enable verbose output for debugging."
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -89,6 +93,10 @@ runs:
         done
         if [[ -n "${{ inputs['mode'] }}" ]]; then
           params+=("--mode=${{ inputs['mode'] }}")
+        fi
+
+        if [[ "${{ inputs['verbose'] }}" == "true" ]]; then
+          params+=("--verbose")
         fi
 
         echo defang $COMMAND "${params[@]}"

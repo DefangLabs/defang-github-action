@@ -47,6 +47,7 @@ jobs:
           cwd: "./test"
           compose-files: ""
           mode: "staging"
+          verbose: true
           command: "compose up --dry-run --project-name github-action-test"
 
       - name: Teardown
