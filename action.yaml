@@ -53,7 +53,7 @@ runs:
       shell: bash
       run: |
         echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV
-        echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV
+        [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
 
     - name: Login to Defang
       shell: bash
