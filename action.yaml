@@ -95,9 +95,9 @@ runs:
           params+=("--mode=${{ inputs['mode'] }}")
         fi
 
-        if [[ "${{ inputs['verbose'] }}" == "true" ]]; then
-          params+=("--verbose")
-        fi
+        case "${{ inputs['verbose'] }}" in
+          y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) params+=("--verbose") ;;
+        esac
 
         echo defang $COMMAND "${params[@]}"
         defang $COMMAND "${params[@]}"
