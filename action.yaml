@@ -30,6 +30,10 @@ inputs:
     description: "The deployment mode. Options: 'development', 'staging', 'production'"
     required: false
     default: ""
+  stack:
+    description: "The stack to deploy."
+    required: false
+    default: ""
   provider:
     description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean', 'gcp'"
     required: false
@@ -54,6 +58,7 @@ runs:
       run: |
         echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
+        [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
 
     - name: Login to Defang
       shell: bash
