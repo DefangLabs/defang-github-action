@@ -14,14 +14,18 @@ inputs:
     description: "Environment variables deploy as config. Format: 'VAR1 VAR2 VAR3'"
     required: false
     default: ""
-  cwd:
-    description: "The directory containing the compose file to deploy."
+  command:
+    description: "The command to run."
     required: false
-    default: "."
+    default: "compose up"
   compose-files:
     description: "The compose files to deploy. Format 'file1 file2 file3'"
     required: false
     default: ""
+  cwd:
+    description: "The directory containing the compose file to deploy."
+    required: false
+    default: "."
   mode:
     description: "The deployment mode. Options: 'development', 'staging', 'production'"
     required: false
@@ -30,10 +34,6 @@ inputs:
     description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean', 'gcp'"
     required: false
     default: "defang"
-  command:
-    description: "The command to run."
-    required: false
-    default: "compose up"
   verbose:
     description: "Enable verbose output for debugging."
     required: false
