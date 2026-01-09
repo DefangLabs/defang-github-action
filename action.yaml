@@ -66,6 +66,15 @@ runs:
         defang login
         defang whoami
 
+    - name: Create stack if necessary
+      shell: bash
+      if: ${{ inputs['stack'] != '' }}
+      run: |
+        if [ ! -f ".defang/${{ inputs['stack'] }}" ]; then
+          echo "Creating stack ${{ inputs['stack'] }}"
+          defang stack create ${{ inputs['stack'] }}
+        fi
+      working-directory: ${{ inputs.cwd }}
     - name: Defang Config Set
       shell: bash
       if: ${{ inputs['config-env-vars'] != '' }}
