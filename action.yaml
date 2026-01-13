@@ -63,7 +63,7 @@ runs:
         echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
-        [ -n "${{ inputs['aws-account-id'] }}" ] && echo "AWS_ROLE_ARN=arn:aws:iam::${{ inputs['aws-account-id'] }}:role/defang-cd-CIRole" >> $GITHUB_ENV || true
+        [ "${{ inputs['provider'] }}" = "aws" ] && [ -n "${{ inputs['aws-account-id'] }}" ] && echo "AWS_ROLE_ARN=arn:aws:iam::${{ inputs['aws-account-id'] }}:role/defang-cd-CIRole" >> $GITHUB_ENV || true
 
     - name: Login to Defang
       shell: bash
