@@ -42,6 +42,10 @@ inputs:
     description: "Enable verbose output for debugging."
     required: false
     default: "false"
+  aws-account-id:
+    description: "AWS Account ID for OIDC authentication. When provided with provider 'aws', automatically sets AWS_ROLE_ARN using the Portal's default role name 'defang-cd-CIRole'."
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -59,6 +63,7 @@ runs:
         echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
+        [ -n "${{ inputs['aws-account-id'] }}" ] && echo "AWS_ROLE_ARN=arn:aws:iam::${{ inputs['aws-account-id'] }}:role/defang-cd-CIRole" >> $GITHUB_ENV || true
 
     - name: Login to Defang
       shell: bash

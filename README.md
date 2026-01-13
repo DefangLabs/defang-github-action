@@ -102,6 +102,39 @@ jobs:
         command: "compose up --project-name my-project"
 ```
 
+### Deploying to AWS
+
+To deploy to your own AWS account, you'll first need to configure AWS for OIDC authentication. The easiest way is through the [Defang Portal](https://portal.defang.io) - navigate to **Clouds** → **AWS** and follow the setup wizard to create the required IAM role via CloudFormation.
+
+Once configured, use the `aws-account-id` input to deploy:
+
+```yaml
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Deploy
+      uses: DefangLabs/defang-github-action@v1.3.0
+      with:
+        provider: aws
+        aws-account-id: "123456789012"  # Your AWS Account ID
+      env:
+        AWS_REGION: us-west-2
+```
+
+This automatically sets the `AWS_ROLE_ARN` to `arn:aws:iam::<account-id>:role/defang-cd-CIRole`, which is the default role created by the Portal.
+
+If you configured AWS manually with a different role name, you can set `AWS_ROLE_ARN` directly in the `env` section instead of using `aws-account-id`.
+
+For detailed setup instructions, see [Deploying to AWS from GitHub Actions](https://docs.defang.io/docs/tutorials/deploying-from-github-actions/to-aws).
+
 ### Full Example
 
 Here is a full example of a GitHub workflow that does everything we've discussed so far:
@@ -126,7 +159,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.2.1
+      uses: DefangLabs/defang-github-action@v1.3.0
       with:
         cli-version: v0.5.43
         config-env-vars: "API_KEY DB_CONNECTION_STRING"
@@ -134,9 +167,11 @@ jobs:
         compose-files: "./docker-compose.yaml"
         mode: "staging"
         provider: "aws"
+        aws-account-id: "123456789012"
         command: "compose up"
         verbose: true
       env:
+        AWS_REGION: us-west-2
         API_KEY: ${{ secrets.API_KEY }}
         DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
 ```
