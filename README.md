@@ -121,7 +121,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.0
+      uses: DefangLabs/defang-github-action@v1.3.1
       with:
         provider: aws
         aws-account-id: "123456789012"  # Your AWS Account ID
@@ -159,7 +159,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.0
+      uses: DefangLabs/defang-github-action@v1.3.1
       with:
         cli-version: v0.5.43
         config-env-vars: "API_KEY DB_CONNECTION_STRING"
