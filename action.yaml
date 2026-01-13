@@ -43,7 +43,7 @@ inputs:
     required: false
     default: "false"
   aws-account-id:
-    description: "AWS Account ID for OIDC authentication. When provided with provider 'aws', automatically sets AWS_ROLE_ARN using the Portal's default role name 'defang-cd-CIRole'."
+    description: "AWS Account ID for OIDC authentication. When provided with provider 'aws', automatically sets AWS_ROLE_ARN using the default role name 'defang-cd-CIRole'."
     required: false
     default: ""
 
