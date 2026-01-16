@@ -134,6 +134,7 @@ jobs:
         compose-files: "./docker-compose.yaml"
         mode: "staging"
         provider: "aws"
+        stack: "production"
         command: "compose up"
         verbose: true
       env:
