@@ -71,7 +71,7 @@ jobs:
 
 ### Specifying the CLI Version
 
-If you want to use a specific version of the Defang CLI, you can specify it using the `cli-version` input.
+If you want to use a specific version of the Defang CLI, you can specify it using the `cli-version` input. Specify a version number, or `nightly` to use the nightly CLI build. Note that the nightly builds have only undergone limited automated testing and should be considered unstable.
 
 ```yaml
 jobs:
