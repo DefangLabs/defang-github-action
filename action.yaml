@@ -35,9 +35,9 @@ inputs:
     required: false
     default: ""
   provider:
-    description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean', 'gcp'"
+    description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean', 'gcp'. If not specified, the CLI will determine the appropriate provider."
     required: false
-    default: "defang"
+    default: ""
   verbose:
     description: "Enable verbose output for debugging."
     required: false
@@ -56,7 +56,7 @@ runs:
     - name: Set Defang environment variables
       shell: bash
       run: |
-        echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV
+        [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
 
