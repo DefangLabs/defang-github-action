@@ -27,7 +27,7 @@ inputs:
     required: false
     default: "."
   mode:
-    description: "The deployment mode. Options: 'development', 'staging', 'production'"
+    description: "The deployment mode. Options: 'affordable', 'balanced', 'high-availability'"
     required: false
     default: ""
   stack:
