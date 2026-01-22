@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.2.1
+      uses: DefangLabs/defang-github-action@v1.3.2
 ```
 
 ### Managing Config Values
@@ -42,7 +42,7 @@ jobs:
     steps:
       # [...]
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.2.1
+      uses: DefangLabs/defang-github-action@v1.3.2
       with:
         # Note: you need to tell Defang which env vars to push to the cloud as config values here. Only these ones will be pushed up.
         config-env-vars: |
@@ -64,7 +64,7 @@ jobs:
     steps:
       # [...]
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.2.0
+      uses: DefangLabs/defang-github-action@v1.3.2
       with:
         cwd: "./test"
 ```
@@ -80,9 +80,9 @@ jobs:
     steps:
       # [...]
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.2.1
+      uses: DefangLabs/defang-github-action@v1.3.2
       with:
-        cli-version: v0.5.38
+        cli-version: v2.10.0
 ```
 
 ### Customizing the Defang Command
@@ -97,7 +97,7 @@ jobs:
     steps:
       # [...]
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.2.1
+      uses: DefangLabs/defang-github-action@v1.3.2
       with:
         command: "compose up --project-name my-project"
 ```
@@ -126,9 +126,9 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.2.1
+      uses: DefangLabs/defang-github-action@v1.3.2
       with:
-        cli-version: v0.5.43
+        cli-version: v2.10.0
         config-env-vars: "API_KEY DB_CONNECTION_STRING"
         cwd: "./test"
         compose-files: "./docker-compose.yaml"
