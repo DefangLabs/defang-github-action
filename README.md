@@ -1,6 +1,11 @@
 # Defang GitHub Action
 
-A GitHub Action to deploy with [Defang](https://defang.io/). Use this action to deploy your application with Defang, either to the [Defang Playground](https://docs.defang.io/docs/providers/playground), or to [your own AWS account](https://docs.defang.io/docs/providers/aws).
+This GitHub Action is the easiest way to deploy your application with [Defang](https://defang.io/).
+
+You can deploy to any of the following cloud providers
+* [your own AWS account](https://docs.defang.io/docs/providers/aws)
+* [your own GCP account](https://docs.defang.io/docs/providers/gcp)
+* [the Defang Playground](https://docs.defang.io/docs/providers/playground)
 
 ## Usage
 
