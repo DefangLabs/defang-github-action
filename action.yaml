@@ -104,6 +104,7 @@ runs:
       env:
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
+        ENV_NAME: ${{ job.environment.name }}
 
     - name: Defang ${{ inputs['command'] }}
       if: ${{ inputs['command'] != '' }}
