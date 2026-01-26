@@ -14,6 +14,10 @@ inputs:
     description: "Environment variables deploy as config. Format: 'VAR1 VAR2 VAR3'"
     required: false
     default: ""
+  config-vars-init-random:
+    description: "Initialize config variables in this list with random values if they are not already set. Format: 'VAR1 VAR2 VAR3'"
+    required: false
+    default: ""
   command:
     description: "The command to run."
     required: false
@@ -90,21 +94,28 @@ runs:
           echo "Some Defang config vars do not have values. To use Github Secrets, add"
           echo "these variables to your environment:"
           for source in "${empty[@]}"; do
-            echo "- $source"
+            if [[ " $CONFIG_ENV_VARS_INIT_RANDOM " != *" $source "* ]]; then
+              echo "- $source"
+            fi
           done
           echo "Here is a link to your repository environments settings:"
           echo "https://github.com/${GITHUB_REPOSITORY}/settings/environments"
         fi
         for source in $CONFIG_ENV_VARS; do
           echo "Updating $source"
-          echo defang config "${params[@]}" set -e $source
-          defang config "${params[@]}" set -e $source
+          if [[ " $CONFIG_ENV_VARS_INIT_RANDOM " == *" $source "* ]]; then
+            echo defang config "${params[@]}" --init --random -e $source
+            defang config "${params[@]}" --init --random -e $source
+          else
+            echo defang config "${params[@]}" set -e $source
+            defang config "${params[@]}" set -e $source
+          fi
         done
       working-directory: ${{ inputs.cwd }}
       env:
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
-        ENV_NAME: ${{ job.environment.name }}
+        CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
 
     - name: Defang ${{ inputs['command'] }}
       if: ${{ inputs['command'] != '' }}
