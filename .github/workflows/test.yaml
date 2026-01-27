@@ -51,4 +51,4 @@ jobs:
           command: "compose up --dry-run --project-name github-action-test"
 
       - name: Teardown
-        run: defang config rm DEFANG_GH_ACTION_TEST_MESSAGE
+        run: defang config rm --project-name github-action-test DEFANG_GH_ACTION_TEST_MESSAGE
