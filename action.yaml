@@ -81,26 +81,10 @@ runs:
             params+=("-f")
             params+=("$filename")
         done
-        empty=()
-        for source in $CONFIG_ENV_VARS; do
-          if [ -z "${!source}" ]; then
-            empty+=("$source")
-          fi
-        done
 
-        # if there are any empty variables, print instructions on how to update
-        # the github environment variables
-        if [ ${#empty[@]} -gt 0 ]; then
-          echo "Some Defang config vars do not have values. To use Github Secrets, add"
-          echo "these variables to your environment:"
-          for source in "${empty[@]}"; do
-            if [[ " $CONFIG_ENV_VARS_INIT_RANDOM " != *" $source "* ]]; then
-              echo "- $source"
-            fi
-          done
-          echo "Here is a link to your repository environments settings:"
-          echo "https://github.com/${GITHUB_REPOSITORY}/settings/environments"
-        fi
+        # Print help text regarding empty env vars
+        ${{ github.action_path }}/scripts/print-empty.sh
+
         for source in $CONFIG_ENV_VARS; do
           echo "Updating $source"
           if [[ " $CONFIG_ENV_VARS_INIT_RANDOM " == *" $source "* ]]; then
