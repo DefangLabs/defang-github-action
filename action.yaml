@@ -73,9 +73,9 @@ runs:
 
     - name: Defang Config Set
       shell: bash
-      if: ${{ inputs['config-env-vars'] != '' }}
+      if: ${{ inputs['config-env-vars'] != '' || inputs['config-vars-init-random'] != '' }}
       run: |
-        # Iterate over the sources and set the environment variables
+        # Build compose file parameters
         params=()
         for filename in $COMPOSE_FILES; do
             params+=("-f")
@@ -85,15 +85,18 @@ runs:
         # Print help text regarding empty env vars
         ${{ github.action_path }}/scripts/print-empty.sh
 
+        # Set random config variables
+        for source in $CONFIG_ENV_VARS_INIT_RANDOM; do
+            echo "Setting $source to a randomly generated value"
+            echo defang config "${params[@]}" --if-not-set --random $source
+            defang config "${params[@]}" --if-not-set --random $source
+        done
+
+        # Set regular config variables
         for source in $CONFIG_ENV_VARS; do
-          echo "Updating $source"
-          if [[ " $CONFIG_ENV_VARS_INIT_RANDOM " == *" $source "* ]]; then
-            echo defang config "${params[@]}" --init --random -e $source
-            defang config "${params[@]}" --init --random -e $source
-          else
+            echo "Updating $source"
             echo defang config "${params[@]}" set -e $source
             defang config "${params[@]}" set -e $source
-          fi
         done
       working-directory: ${{ inputs.cwd }}
       env:
