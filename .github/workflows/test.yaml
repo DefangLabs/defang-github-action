@@ -29,6 +29,8 @@ jobs:
           config-env-vars: |
             DEFANG_GH_ACTION_TEST_ENV
             DEFANG_GH_ACTION_TEST_MESSAGE
+          config-vars-init-random: |
+            DEFANG_GH_ACTION_TEST_SECRET
           cwd: "./test"
           compose-files: |
             compose.yaml
