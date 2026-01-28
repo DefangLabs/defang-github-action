@@ -93,7 +93,7 @@ runs:
         # If there are empty variables, print instructions
         if [ ${#empty[@]} -gt 0 ]; then
             echo "Some Defang config vars do not have values. To use Github Secrets, add"
-            echo "these variables to your environment:"
+            echo "these variables to your environment secrets:"
             for source in "${empty[@]}"; do
                 echo "- $source"
             done
