@@ -14,6 +14,10 @@ inputs:
     description: "Environment variables deploy as config. Format: 'VAR1 VAR2 VAR3'"
     required: false
     default: ""
+  config-vars-init-random:
+    description: "Initialize config variables in this list with random values if they are not already set. Format: 'VAR1 VAR2 VAR3'"
+    required: false
+    default: ""
   command:
     description: "The command to run."
     required: false
@@ -69,41 +73,52 @@ runs:
 
     - name: Defang Config Set
       shell: bash
-      if: ${{ inputs['config-env-vars'] != '' }}
+      if: ${{ inputs['config-env-vars'] != '' || inputs['config-vars-init-random'] != '' }}
       run: |
-        # Iterate over the sources and set the environment variables
+        # Build compose file parameters
         params=()
         for filename in $COMPOSE_FILES; do
             params+=("-f")
             params+=("$filename")
         done
+
+        # Check for empty environment variables (only for regular config vars)
         empty=()
         for source in $CONFIG_ENV_VARS; do
-          if [ -z "${!source}" ]; then
-            empty+=("$source")
-          fi
+            if [ -z "${!source}" ]; then
+                empty+=("$source")
+            fi
         done
 
-        # if there are any empty variables, print instructions on how to update
-        # the github environment variables
+        # If there are empty variables, print instructions
         if [ ${#empty[@]} -gt 0 ]; then
-          echo "Some Defang config vars do not have values. To use Github Secrets, add"
-          echo "these variables to your environment secrets:"
-          for source in "${empty[@]}"; do
-            echo "- $source"
-          done
-          echo "Here is a link to your repository environments settings:"
-          echo "https://github.com/${GITHUB_REPOSITORY}/settings/environments"
+            echo "Some Defang config vars do not have values. To use Github Secrets, add"
+            echo "these variables to your environment secrets:"
+            for source in "${empty[@]}"; do
+                echo "- $source"
+            done
+            echo "Here is a link to your repository environments settings:"
+            echo "https://github.com/${GITHUB_REPOSITORY}/settings/environments"
         fi
+
+        # Set random config variables
+        for source in $CONFIG_ENV_VARS_INIT_RANDOM; do
+            echo "Setting $source to a randomly generated value"
+            echo defang config "${params[@]}" set --if-not-set --random $source
+            defang config "${params[@]}" set --if-not-set --random $source
+        done
+
+        # Set regular config variables
         for source in $CONFIG_ENV_VARS; do
-          echo "Updating $source"
-          echo defang config "${params[@]}" set -e $source
-          defang config "${params[@]}" set -e $source
+            echo "Updating $source"
+            echo defang config "${params[@]}" set -e $source
+            defang config "${params[@]}" set -e $source
         done
       working-directory: ${{ inputs.cwd }}
       env:
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
+        CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
 
     - name: Defang ${{ inputs['command'] }}
       if: ${{ inputs['command'] != '' }}
