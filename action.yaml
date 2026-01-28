@@ -104,8 +104,8 @@ runs:
         # Set random config variables
         for source in $CONFIG_ENV_VARS_INIT_RANDOM; do
             echo "Setting $source to a randomly generated value"
-            echo defang config "${params[@]}" --if-not-set --random $source
-            defang config "${params[@]}" --if-not-set --random $source
+            echo defang config "${params[@]}" set --if-not-set --random $source
+            defang config "${params[@]}" set --if-not-set --random $source
         done
 
         # Set regular config variables
