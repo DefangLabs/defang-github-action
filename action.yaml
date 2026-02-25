@@ -47,6 +47,11 @@ inputs:
     required: false
     default: "false"
 
+outputs:
+  stdout:
+    description: "The stdout of the command."
+    value: ${{ steps.command.outputs.stdout }}
+
 runs:
   using: "composite"
   steps:
@@ -63,8 +68,8 @@ runs:
     - name: Set Defang environment variables
       shell: bash
       run: |
-        [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
+        [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
 
     - name: Login to Defang
@@ -124,10 +129,12 @@ runs:
         CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
 
     - name: Defang ${{ inputs['command'] }}
+      id: command
       if: ${{ inputs['command'] != '' }}
       shell: bash
       working-directory: ${{ inputs.cwd }}
       run: |
+        set -o pipefail
         params=()
         for filename in $COMPOSE_FILES; do
             params+=("-f")
@@ -142,7 +149,10 @@ runs:
         esac
 
         echo defang $COMMAND "${params[@]}"
-        defang $COMMAND "${params[@]}"
+        output=$(defang $COMMAND "${params[@]}" | tee /dev/stderr)
+        echo "stdout<<DEFANG_EOF" >> "$GITHUB_OUTPUT"
+        echo "$output" >> "$GITHUB_OUTPUT"
+        echo "DEFANG_EOF" >> "$GITHUB_OUTPUT"
       env:
         COMMAND: ${{ inputs['command'] }}
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
