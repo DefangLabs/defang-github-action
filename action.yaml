@@ -38,6 +38,10 @@ inputs:
     description: "The stack to deploy."
     required: false
     default: ""
+  project:
+    description: "The project to deploy. If not specified, the CLI will determine the project name from the current directory or compose file."
+    required: false
+    default: ""
   provider:
     description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean', 'gcp'. If not specified, the CLI will determine the appropriate provider."
     required: false
@@ -71,6 +75,7 @@ runs:
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
         [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
+        [ -n "${{ inputs['project'] }}" ] && echo "COMPOSE_PROJECT_NAME=${{ inputs['project'] }}" >> $GITHUB_ENV || true
 
     - name: Login to Defang
       shell: bash
