@@ -2,11 +2,16 @@
 
 ## Releasing a New Version
 
-Navigate to the [New Release]([https://github.com/DefangLabs/defang-github-action/releases](https://github.com/DefangLabs/defang-github-action/releases/new)) form for this repo.
+Push a tag in `vMAJOR.MINOR.PATCH` format (e.g. `v1.2.3`) pointing to the commit on `main` you want to release, using either:
 
-Make sure `Publish this Action to the GitHub Marketplace` is checked.
+- **Git CLI:**
+  ```sh
+  git tag v1.2.3
+  git push origin v1.2.3
+  ```
 
-* **If you have already cut a tag**, you can choose that tag in the form.
-* **If you have not pushed a tag**, write the name of the tag you want to create, for example `v1.2.3`, and make sure the target is set to the `main` branch.
+- **GitHub web UI:** Go to the [New Release](https://github.com/DefangLabs/defang-github-action/releases/new) page. In the **Choose a tag** dropdown, type the new tag (e.g. `v1.2.3`) and select **Create new tag on publish**. Set the target to `main`, then click **Publish release**.
 
-You do not need to provider a release description, but you should write a release title which starts with the tag name, ex: `v1.2.3 Add support for My New Feature`.
+The [release workflow](.github/workflows/release.yaml) triggers automatically on the new tag and will:
+- Update the floating `vMAJOR` and `vMAJOR.MINOR` tags (e.g. `v1` and `v1.2`) to point at the new commit.
+- Create a GitHub Release with auto-generated notes, marked as **latest** only if the new tag is the highest semver across all existing releases. This step is skipped if the release already exists (e.g. when using the web UI), in which case whatever **latest** setting was chosen in the web UI is preserved.

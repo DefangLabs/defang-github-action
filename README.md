@@ -3,9 +3,10 @@
 This GitHub Action is the easiest way to deploy your application with [Defang](https://defang.io/).
 
 You can deploy to any of the following cloud providers
-* [your own AWS account](https://docs.defang.io/docs/providers/aws)
-* [your own GCP account](https://docs.defang.io/docs/providers/gcp)
-* [the Defang Playground](https://docs.defang.io/docs/providers/playground)
+
+- [your own AWS account](https://docs.defang.io/docs/providers/aws)
+- [your own GCP account](https://docs.defang.io/docs/providers/gcp)
+- [the Defang Playground](https://docs.defang.io/docs/providers/playground)
 
 ## Usage
 
@@ -22,11 +23,11 @@ jobs:
       id-token: write
 
     steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-    - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.2
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v1
 ```
 
 ### Managing Config Values
@@ -35,8 +36,8 @@ Defang allows you to [securely manage configuration values](https://docs.defang.
 
 To publish a secret stored in GitHub to the cloud as a secure config value with defang, you need to do two things:
 
-  1. Use the `env` section of the step to pass the value of the secrets to environment variables that match the names of the config values in your Compose file.
-  2. Specify the names of the environment variables you want to push to the cloud as config values in the `config-env-vars` input, either whitespace delimited or as a YAML literal block scalar (`|`).
+1. Use the `env` section of the step to pass the value of the secrets to environment variables that match the names of the config values in your Compose file.
+2. Specify the names of the environment variables you want to push to the cloud as config values in the `config-env-vars` input, either whitespace delimited or as a YAML literal block scalar (`|`).
 
 The second step is to make sure that we only publish the secrets you explicitly tell us to. For example, you could have a secret in an env var at the job level, instead of the step level that you might not want to push to the cloud, even if it is in a secure store.
 
@@ -46,16 +47,16 @@ jobs:
     # [...]
     steps:
       # [...]
-    - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.2
-      with:
-        # Note: you need to tell Defang which env vars to push to the cloud as config values here. Only these ones will be pushed up.
-        config-env-vars: |
-          API_KEY
-          DB_CONNECTION_STRING
-      env:
-        API_KEY: ${{ secrets.API_KEY }}
-        DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v1
+        with:
+          # Note: you need to tell Defang which env vars to push to the cloud as config values here. Only these ones will be pushed up.
+          config-env-vars: |
+            API_KEY
+            DB_CONNECTION_STRING
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
 ```
 
 ### Projects in a Subdirectory
@@ -68,10 +69,10 @@ jobs:
     # [...]
     steps:
       # [...]
-    - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.2
-      with:
-        cwd: "./test"
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v1
+        with:
+          cwd: "./test"
 ```
 
 ### Specifying the CLI Version
@@ -84,10 +85,10 @@ jobs:
     # [...]
     steps:
       # [...]
-    - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.2
-      with:
-        cli-version: v2.10.0
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v1
+        with:
+          cli-version: v2.10.0
 ```
 
 ### Customizing the Defang Command
@@ -101,10 +102,10 @@ jobs:
     # [...]
     steps:
       # [...]
-    - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.2
-      with:
-        command: "compose up --project-name my-project"
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v1
+        with:
+          command: "compose up --project-name my-project"
 ```
 
 ### Full Example
@@ -127,22 +128,22 @@ jobs:
       id-token: write
 
     steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-    - name: Deploy
-      uses: DefangLabs/defang-github-action@v1.3.2
-      with:
-        cli-version: v2.10.0
-        config-env-vars: "API_KEY DB_CONNECTION_STRING"
-        cwd: "./test"
-        compose-files: "./docker-compose.yaml"
-        mode: "staging"
-        provider: "aws"
-        stack: "production"
-        command: "compose up"
-        verbose: true
-      env:
-        API_KEY: ${{ secrets.API_KEY }}
-        DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v1
+        with:
+          cli-version: v2.10.0
+          config-env-vars: "API_KEY DB_CONNECTION_STRING"
+          cwd: "./test"
+          compose-files: "./docker-compose.yaml"
+          mode: "staging"
+          provider: "aws"
+          stack: "production"
+          command: "compose up"
+          verbose: true
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
 ```
