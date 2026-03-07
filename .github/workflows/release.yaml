@@ -15,6 +15,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate tag format
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Unexpected tag format: '$TAG'. Expected vMAJOR.MINOR.PATCH." >&2
+            exit 1
+          fi
+
       - name: Update floating tags
         run: |
           TAG="${GITHUB_REF_NAME}"
