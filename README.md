@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy
-        uses: DefangLabs/defang-github-action@v1.3.2
+        uses: DefangLabs/defang-github-action@v1
 ```
 
 ### Managing Config Values
@@ -48,7 +48,7 @@ jobs:
     steps:
       # [...]
       - name: Deploy
-        uses: DefangLabs/defang-github-action@v1.3.2
+        uses: DefangLabs/defang-github-action@v1
         with:
           # Note: you need to tell Defang which env vars to push to the cloud as config values here. Only these ones will be pushed up.
           config-env-vars: |
@@ -70,7 +70,7 @@ jobs:
     steps:
       # [...]
       - name: Deploy
-        uses: DefangLabs/defang-github-action@v1.3.2
+        uses: DefangLabs/defang-github-action@v1
         with:
           cwd: "./test"
 ```
@@ -86,7 +86,7 @@ jobs:
     steps:
       # [...]
       - name: Deploy
-        uses: DefangLabs/defang-github-action@v1.3.2
+        uses: DefangLabs/defang-github-action@v1
         with:
           cli-version: v2.10.0
 ```
@@ -103,7 +103,7 @@ jobs:
     steps:
       # [...]
       - name: Deploy
-        uses: DefangLabs/defang-github-action@v1.3.2
+        uses: DefangLabs/defang-github-action@v1
         with:
           command: "compose up --project-name my-project"
 ```
@@ -132,7 +132,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy
-        uses: DefangLabs/defang-github-action@v1.3.2
+        uses: DefangLabs/defang-github-action@v1
         with:
           cli-version: v2.10.0
           config-env-vars: "API_KEY DB_CONNECTION_STRING"
