@@ -115,18 +115,18 @@ runs:
         fi
 
         # Set random config variables
-        for source in $CONFIG_ENV_VARS_INIT_RANDOM; do
-            echo "Setting $source to a randomly generated value"
-            echo defang config "${params[@]}" set --if-not-set --random $source
-            defang config "${params[@]}" set --if-not-set --random $source
-        done
+        if [ -n "$CONFIG_ENV_VARS_INIT_RANDOM" ]; then
+            echo "Setting randomly generated configs..."
+            echo defang config "${params[@]}" set --if-not-set --random $CONFIG_ENV_VARS_INIT_RANDOM
+            defang config "${params[@]}" set --if-not-set --random $CONFIG_ENV_VARS_INIT_RANDOM
+        fi
 
         # Set regular config variables
-        for source in $CONFIG_ENV_VARS; do
-            echo "Updating $source"
-            echo defang config "${params[@]}" set -e $source
-            defang config "${params[@]}" set -e $source
-        done
+        if [ -n "$CONFIG_ENV_VARS" ]; then
+            echo "Updating configs..."
+            echo defang config "${params[@]}" set -e $CONFIG_ENV_VARS
+            defang config "${params[@]}" set -e $CONFIG_ENV_VARS
+        fi
       working-directory: ${{ inputs.cwd }}
       env:
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
