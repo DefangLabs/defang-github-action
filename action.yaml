@@ -116,7 +116,7 @@ runs:
 
         # Set random config variables
         if [ -n "$CONFIG_ENV_VARS_INIT_RANDOM" ]; then
-            echo "Setting randomly generated configs..."
+            echo "Initialize randomly generated configs..."
             echo defang config "${params[@]}" set --if-not-set --random $CONFIG_ENV_VARS_INIT_RANDOM
             defang config "${params[@]}" set --if-not-set --random $CONFIG_ENV_VARS_INIT_RANDOM
         fi
