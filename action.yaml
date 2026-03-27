@@ -50,6 +50,10 @@ inputs:
     description: "Enable verbose output for debugging."
     required: false
     default: "false"
+  allow-upgrade:
+    description: "Allow upgrading the CD image and Pulumi version to the latest available"
+    required: false
+    default: "false"
 
 outputs:
   stdout:
@@ -151,6 +155,10 @@ runs:
 
         case "${{ inputs['verbose'] }}" in
           y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) params+=("--verbose") ;;
+        esac
+
+        case "${{ inputs['allow-upgrade'] }}" in
+          y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) params+=("--allow-upgrade") ;;
         esac
 
         echo defang $COMMAND "${params[@]}"
