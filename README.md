@@ -88,7 +88,21 @@ jobs:
       - name: Deploy
         uses: DefangLabs/defang-github-action@v2
         with:
-          cli-version: v2.10.0
+          cli-version: v3.5.2
+```
+
+You can also pass any Git ref (branch name or commit SHA) to build the CLI from source:
+
+```yaml
+jobs:
+  test:
+    # [...]
+    steps:
+      # [...]
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v2
+        with:
+          cli-version: main
 ```
 
 ### Customizing the Defang Command
@@ -134,7 +148,7 @@ jobs:
       - name: Deploy
         uses: DefangLabs/defang-github-action@v2
         with:
-          cli-version: v2.10.0
+          cli-version: v3.5.2
           config-env-vars: "API_KEY DB_CONNECTION_STRING"
           cwd: "./test"
           compose-files: "./docker-compose.yaml"

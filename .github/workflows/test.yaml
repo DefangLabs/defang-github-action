@@ -42,6 +42,13 @@ jobs:
           DEFANG_GH_ACTION_TEST_ENV: "foo"
           DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
 
+      - name: Deploy from Git ref
+        uses: ./
+        with:
+          cli-version: main
+          cwd: "./test"
+          command: "config help"
+
       - name: Deploy-Empty-Params
         uses: ./
         continue-on-error: true # Ignore dry run error
