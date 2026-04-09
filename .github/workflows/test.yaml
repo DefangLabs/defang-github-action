@@ -4,10 +4,7 @@ on:
   push:
     branches:
       - main
-      - "**"
   pull_request:
-    branches:
-      - "**"
   workflow_dispatch:
   # schedule:
   #   - cron: "0 0 * * *" # daily at midnight
@@ -41,6 +38,13 @@ jobs:
         env:
           DEFANG_GH_ACTION_TEST_ENV: "foo"
           DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
+
+      - name: Deploy from Git ref
+        uses: ./
+        with:
+          cli-version: main
+          cwd: "./test"
+          command: "config help"
 
       - name: Deploy-Empty-Params
         uses: ./
