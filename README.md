@@ -77,7 +77,10 @@ jobs:
 
 ### Specifying the CLI Version
 
-If you want to use a specific version of the Defang CLI, you can specify it using the `cli-version` input. Specify a version number, or `nightly` to use the nightly CLI build. Note that the nightly builds have only undergone limited automated testing and should be considered unstable.
+If you want to use a specific version of the Defang CLI, you can specify it using the `cli-version` input.
+Specify a version number (with or without `v`), or `nightly` to use the nightly CLI build.
+Note that the nightly builds have only undergone limited automated testing and should be considered unstable.
+You can also pass any Git ref (branch name like `main` or commit SHA) to build the CLI from source using `go`.
 
 ```yaml
 jobs:
@@ -88,21 +91,7 @@ jobs:
       - name: Deploy
         uses: DefangLabs/defang-github-action@v2
         with:
-          cli-version: v3.5.2
-```
-
-You can also pass any Git ref (branch name or commit SHA) to build the CLI from source:
-
-```yaml
-jobs:
-  test:
-    # [...]
-    steps:
-      # [...]
-      - name: Deploy
-        uses: DefangLabs/defang-github-action@v2
-        with:
-          cli-version: main
+          cli-version: v3.5.2 # or 3.5.2 or nightly or main or a commit SHA
 ```
 
 ### Customizing the Defang Command
