@@ -81,7 +81,6 @@ When running inside SAM (detected by `$SAM_WORKSPACE_ID`):
 
 - **Ephemeral environment**: This workspace is a temporary VM. Unpushed work is lost when the workspace stops. Commit and push after every meaningful change.
 - **Progress reporting**: Use `update_task_status` after completing changes (e.g., "updated action inputs", "CI passing").
-- **After pushing**: Check `get_ci_status` to verify the test workflow passes.
 - **Cross-repo coordination**: Changes here may need corresponding updates in the CLI repo (`DefangLabs/defang`). Use `dispatch_task` to coordinate rather than trying to modify both repos in one workspace.
 - **Ideas**: Use `create_idea` for improvements noticed but out of scope (e.g., "add DigitalOcean to README providers list").
 - Do NOT launch `claude` as a subprocess — use SAM's task dispatch instead.
