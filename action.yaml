@@ -90,7 +90,7 @@ runs:
       shell: bash
       run: |
         if ! which defang >/dev/null 2>&1; then
-          . <(curl -Lf https://raw.githubusercontent.com/DefangLabs/defang/main/src/bin/install || echo return $?)
+          . <(curl -fsSL https://raw.githubusercontent.com/DefangLabs/defang/main/src/bin/install || echo return $?)
         fi
       env:
         DEFANG_INSTALL_VERSION: ${{ inputs['cli-version'] }}
