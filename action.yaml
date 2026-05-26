@@ -184,6 +184,8 @@ runs:
           y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) params+=("--allow-upgrade") ;;
         esac
 
+        unset ${{ inputs['config-env-vars'] }} ${{ inputs['config-vars-init-random'] }} dont_complain_on_empty
+
         echo defang $COMMAND "${params[@]}"
         output=$(defang $COMMAND "${params[@]}" | tee /dev/stderr)
         echo "stdout<<DEFANG_EOF" >> "$GITHUB_OUTPUT"
