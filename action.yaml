@@ -184,6 +184,9 @@ runs:
           y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) params+=("--allow-upgrade") ;;
         esac
 
+        # Unset config vars to avoid Defang CLI warning user that config from shell env is ignored
+        unset $CONFIG_ENV_VARS_INIT_RANDOM $CONFIG_ENV_VARS dont_complain_on_empty
+
         echo defang $COMMAND "${params[@]}"
         output=$(defang $COMMAND "${params[@]}" | tee /dev/stderr)
         echo "stdout<<DEFANG_EOF" >> "$GITHUB_OUTPUT"
@@ -192,3 +195,6 @@ runs:
       env:
         COMMAND: ${{ inputs['command'] }}
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
+        CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
+        CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
+
