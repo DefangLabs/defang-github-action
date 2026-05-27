@@ -184,7 +184,10 @@ runs:
           y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) params+=("--allow-upgrade") ;;
         esac
 
-        unset ${{ inputs['config-env-vars'] }} ${{ inputs['config-vars-init-random'] }} dont_complain_on_empty
+        # Unset config vars to avoid Defang CLI warning user that config from shell env is ignored
+        for var in ${{ inputs['config-env-vars'] }} ${{ inputs['config-vars-init-random'] }}; do
+          unset "$var"
+        done
 
         echo defang $COMMAND "${params[@]}"
         output=$(defang $COMMAND "${params[@]}" | tee /dev/stderr)
