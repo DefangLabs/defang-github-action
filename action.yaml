@@ -62,7 +62,7 @@ inputs:
 outputs:
   stdout:
     description: "The stdout of the command. Only available when capture-output is 'true'."
-    value: ${{ steps.command.outputs.stdout }}
+    value: ${{ steps.forward-output.outputs.stdout }}
 
 runs:
   using: "composite"
@@ -206,4 +206,15 @@ runs:
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
         CAPTURE_OUTPUT: ${{ inputs['capture-output'] }}
+
+    - name: Forward output
+      id: forward-output
+      if: ${{ inputs['capture-output'] == 'true' }}
+      shell: bash
+      run: |
+        echo "stdout<<DEFANG_EOF" >> "$GITHUB_OUTPUT"
+        echo "$STDOUT" >> "$GITHUB_OUTPUT"
+        echo "DEFANG_EOF" >> "$GITHUB_OUTPUT"
+      env:
+        STDOUT: ${{ steps.command.outputs.stdout }}
 
