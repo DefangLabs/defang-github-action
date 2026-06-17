@@ -54,10 +54,14 @@ inputs:
     description: "Allow upgrading the CD image and Pulumi version to the latest available"
     required: false
     default: "false"
+  capture-output:
+    description: "Capture the command's stdout as an output. Disable for large deployments to avoid GitHub Actions memory limits."
+    required: false
+    default: "true"
 
 outputs:
   stdout:
-    description: "The stdout of the command."
+    description: "The stdout of the command. Only available when capture-output is 'true'."
     value: ${{ steps.command.outputs.stdout }}
 
 runs:
@@ -188,13 +192,18 @@ runs:
         unset $CONFIG_ENV_VARS_INIT_RANDOM $CONFIG_ENV_VARS dont_complain_on_empty
 
         echo defang $COMMAND "${params[@]}"
-        output=$(defang $COMMAND "${params[@]}" | tee /dev/stderr)
-        echo "stdout<<DEFANG_EOF" >> "$GITHUB_OUTPUT"
-        echo "$output" >> "$GITHUB_OUTPUT"
-        echo "DEFANG_EOF" >> "$GITHUB_OUTPUT"
+        if [[ "$CAPTURE_OUTPUT" =~ ^(y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1)$ ]]; then
+          output=$(defang $COMMAND "${params[@]}" | tee /dev/stderr)
+          echo "stdout<<DEFANG_EOF" >> "$GITHUB_OUTPUT"
+          echo "$output" >> "$GITHUB_OUTPUT"
+          echo "DEFANG_EOF" >> "$GITHUB_OUTPUT"
+        else
+          defang $COMMAND "${params[@]}"
+        fi
       env:
         COMMAND: ${{ inputs['command'] }}
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
+        CAPTURE_OUTPUT: ${{ inputs['capture-output'] }}
 

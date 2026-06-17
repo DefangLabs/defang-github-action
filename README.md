@@ -111,6 +111,22 @@ jobs:
           command: "compose up --project-name my-project"
 ```
 
+### Disabling Output Capture
+
+By default, the action captures the command's stdout as an output (`outputs.stdout`). For large deployments, this can exceed GitHub Actions' memory limits and cause the workflow to fail even though the deployment succeeded. If you don't need the stdout output, disable it:
+
+```yaml
+jobs:
+  test:
+    # [...]
+    steps:
+      # [...]
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v2
+        with:
+          capture-output: false
+```
+
 ### Full Example
 
 Here is a full example of a GitHub workflow that does everything we've discussed so far:
