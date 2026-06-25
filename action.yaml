@@ -15,7 +15,7 @@ inputs:
     required: false
     default: ""
   config-env-vars-init:
-    description: "Initialize config variables in this list with if they are not already set. Format: 'VAR1 VAR2 VAR3'"
+    description: "Initialize config variables in this list from environment values if they are not already set. Format: 'VAR1 VAR2 VAR3'"
     required: false
     default: ""
   config-vars-init-random:
