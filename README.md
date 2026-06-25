@@ -5,8 +5,8 @@ This GitHub Action is the easiest way to deploy your application with [Defang](h
 You can deploy to any of the following cloud providers
 
 - [your own AWS account](https://docs.defang.io/docs/providers/aws)
+- [your own Azure account](https://docs.defang.io/docs/providers/azure)
 - [your own GCP account](https://docs.defang.io/docs/providers/gcp)
-- [the Defang Playground](https://docs.defang.io/docs/providers/playground)
 
 ## Usage
 
