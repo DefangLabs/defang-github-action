@@ -216,7 +216,7 @@ runs:
         COMMAND: ${{ inputs['command'] }}
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
-        CONFIG_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
+        CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
         CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
         CAPTURE_OUTPUT: ${{ inputs['capture-output'] }}
 
