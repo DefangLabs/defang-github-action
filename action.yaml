@@ -11,7 +11,11 @@ inputs:
     required: false
     default: ""
   config-env-vars:
-    description: "Environment variables deploy as config. Format: 'VAR1 VAR2 VAR3'"
+    description: "Environment variables to deploy as config. Format: 'VAR1 VAR2 VAR3'"
+    required: false
+    default: ""
+  config-env-vars-init:
+    description: "Initialize config variables in this list from environment values if they are not already set. Format: 'VAR1 VAR2 VAR3'"
     required: false
     default: ""
   config-vars-init-random:
@@ -117,7 +121,7 @@ runs:
 
     - name: Defang Config Set
       shell: bash
-      if: ${{ inputs['config-env-vars'] != '' || inputs['config-vars-init-random'] != '' }}
+      if: ${{ inputs['config-env-vars'] != '' || inputs['config-vars-init-random'] != '' || inputs['config-env-vars-init'] != '' }}
       run: |
         # Build compose file parameters
         params=()
@@ -126,9 +130,9 @@ runs:
             params+=("$filename")
         done
 
-        # Check for empty environment variables (only for regular config vars)
+        # Check for empty environment variables (only for config vars from env)
         empty=()
-        for source in $CONFIG_ENV_VARS; do
+        for source in $CONFIG_ENV_VARS $CONFIG_ENV_VARS_INIT; do
             if [ -z "${!source}" ]; then
                 empty+=("$source")
             fi
@@ -146,10 +150,17 @@ runs:
         fi
 
         # Set random config variables
-        if [ -n "$CONFIG_ENV_VARS_INIT_RANDOM" ]; then
+        if [ -n "$CONFIG_VARS_INIT_RANDOM" ]; then
             echo "Initialize randomly generated configs..."
-            echo defang config "${params[@]}" set --if-not-set --random $CONFIG_ENV_VARS_INIT_RANDOM
-            defang config "${params[@]}" set --if-not-set --random $CONFIG_ENV_VARS_INIT_RANDOM
+            echo defang config "${params[@]}" set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
+            defang config "${params[@]}" set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
+        fi
+
+        # Set init config variables
+        if [ -n "$CONFIG_ENV_VARS_INIT" ]; then
+            echo "Initialize configs..."
+            echo defang config "${params[@]}" set --if-not-set -e $CONFIG_ENV_VARS_INIT
+            defang config "${params[@]}" set --if-not-set -e $CONFIG_ENV_VARS_INIT
         fi
 
         # Set regular config variables
@@ -162,7 +173,8 @@ runs:
       env:
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
-        CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
+        CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
+        CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
 
     - name: Defang ${{ inputs['command'] }}
       id: command
@@ -189,7 +201,7 @@ runs:
         esac
 
         # Unset config vars to avoid Defang CLI warning user that config from shell env is ignored
-        unset $CONFIG_ENV_VARS_INIT_RANDOM $CONFIG_ENV_VARS dont_complain_on_empty
+        unset $CONFIG_VARS_INIT_RANDOM $CONFIG_ENV_VARS $CONFIG_ENV_VARS_INIT dont_complain_on_empty
 
         echo defang $COMMAND "${params[@]}"
         if [[ "$CAPTURE_OUTPUT" =~ ^(y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1)$ ]]; then
@@ -204,7 +216,8 @@ runs:
         COMMAND: ${{ inputs['command'] }}
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
-        CONFIG_ENV_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
+        CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
+        CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
         CAPTURE_OUTPUT: ${{ inputs['capture-output'] }}
 
     - name: Forward output
