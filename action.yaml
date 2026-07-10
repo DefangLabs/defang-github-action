@@ -35,7 +35,7 @@ inputs:
     required: false
     default: "."
   mode:
-    description: "The deployment mode. Options: 'affordable', 'balanced', 'high-availability'"
+    description: "The deployment mode. Options: 'affordable', 'balanced', 'high-availability'. Deprecated in favor of stack:"
     required: false
     default: ""
   stack:
@@ -47,7 +47,7 @@ inputs:
     required: false
     default: ""
   provider:
-    description: "The cloud provider to deploy to. Options: 'aws', 'defang', 'digitalocean', 'gcp'. If not specified, the CLI will determine the appropriate provider."
+    description: "The cloud provider to deploy to. Options: 'aws', 'azure', 'digitalocean', 'gcp'. If not specified, the CLI will determine the appropriate provider. Deprecated in favor of stack:"
     required: false
     default: ""
   verbose:

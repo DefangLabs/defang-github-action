@@ -157,8 +157,8 @@ jobs:
           config-env-vars: "API_KEY DB_CONNECTION_STRING"
           cwd: "./test"
           compose-files: "./docker-compose.yaml"
-          mode: "staging"
-          provider: "aws"
+          mode: "balanced" # deprecated in favor of stack:
+          provider: "aws"  # deprecated in favor of stack:
           stack: "production"
           command: "compose up"
           verbose: true

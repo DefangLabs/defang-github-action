@@ -33,7 +33,6 @@ jobs:
           compose-files: |
             compose.yaml
             compose.prod.yaml
-          mode: ""
           command: "compose help"
         env:
           DEFANG_GH_ACTION_TEST_ENV: "foo"
@@ -53,7 +52,6 @@ jobs:
           config-env-vars: ""
           cwd: "./test"
           compose-files: ""
-          mode: "staging"
           verbose: true
           command: "compose up --dry-run --project-name github-action-test"
 
