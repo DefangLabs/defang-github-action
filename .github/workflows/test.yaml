@@ -24,19 +24,11 @@ jobs:
         uses: ./
         with:
           cli-version: nightly
-          config-env-vars: |
-            DEFANG_GH_ACTION_TEST_ENV
-            DEFANG_GH_ACTION_TEST_MESSAGE
-          config-vars-init-random: |
-            DEFANG_GH_ACTION_TEST_SECRET
           cwd: "./test"
           compose-files: |
             compose.yaml
             compose.prod.yaml
           command: "compose help"
-        env:
-          DEFANG_GH_ACTION_TEST_ENV: "foo"
-          DEFANG_GH_ACTION_TEST_MESSAGE: ${{ secrets.MESSAGE }}
 
       - name: Deploy from Git ref
         uses: ./
@@ -54,6 +46,3 @@ jobs:
           compose-files: ""
           verbose: true
           command: "compose up --dry-run --project-name github-action-test"
-
-      - name: Teardown
-        run: defang config rm --project-name github-action-test DEFANG_GH_ACTION_TEST_MESSAGE
