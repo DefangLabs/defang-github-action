@@ -59,9 +59,9 @@ inputs:
     required: false
     default: "false"
   capture-output:
-    description: "Capture the command's stdout as an output. Disable for large deployments to avoid GitHub Actions memory limits."
+    description: "Capture the command's stdout as the 'stdout' output. Off by default: large deployments can exceed GitHub Actions memory limits."
     required: false
-    default: "true"
+    default: "false"
   summary:
     description: "After the command runs, write a table of deployed services to the GitHub job summary and expose the primary public endpoint as the 'endpoint' output. Uses 'defang services --json'. Defaults to enabled when 'command' is the default 'compose up'. Set to 'false' to disable, or 'true' to force-enable for other commands."
     required: false
@@ -72,7 +72,7 @@ outputs:
     description: "The stdout of the command. Only available when capture-output is 'true'."
     value: ${{ steps.forward-output.outputs.stdout }}
   endpoint:
-    description: "The primary public https endpoint of the deployed project (best-effort). Only set when 'summary' is 'true'."
+    description: "The primary public https endpoint of the deployed project (best-effort). Only set when the deployment summary runs (see 'summary')."
     value: ${{ steps.summary.outputs.endpoint }}
 
 runs:
@@ -118,6 +118,18 @@ runs:
         [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['project'] }}" ] && echo "COMPOSE_PROJECT_NAME=${{ inputs['project'] }}" >> $GITHUB_ENV || true
+        # Docker Compose (and the Defang CLI) natively read the compose file
+        # list from COMPOSE_FILE, so export that once instead of building a
+        # repeated -f/-f/-f list in every step. The unquoted echo collapses
+        # any whitespace (spaces or newlines) between filenames before tr
+        # joins them with ':'; COMPOSE_PATH_SEPARATOR pins the separator to
+        # ':' regardless of the runner OS.
+        if [ -n "$COMPOSE_FILES" ]; then
+          echo "COMPOSE_FILE=$(echo $COMPOSE_FILES | tr ' ' ':')" >> $GITHUB_ENV
+          echo "COMPOSE_PATH_SEPARATOR=:" >> $GITHUB_ENV
+        fi
+      env:
+        COMPOSE_FILES: ${{ inputs['compose-files'] }}
 
     - name: Login to Defang
       shell: bash
@@ -130,13 +142,6 @@ runs:
       shell: bash
       if: ${{ inputs['config-env-vars'] != '' || inputs['config-vars-init-random'] != '' || inputs['config-env-vars-init'] != '' }}
       run: |
-        # Build compose file parameters
-        params=()
-        for filename in $COMPOSE_FILES; do
-            params+=("-f")
-            params+=("$filename")
-        done
-
         # Check for empty environment variables (only for config vars from env)
         empty=()
         for source in $CONFIG_ENV_VARS $CONFIG_ENV_VARS_INIT; do
@@ -159,26 +164,25 @@ runs:
         # Set random config variables
         if [ -n "$CONFIG_VARS_INIT_RANDOM" ]; then
             echo "Initialize randomly generated configs..."
-            echo defang config "${params[@]}" set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
-            defang config "${params[@]}" set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
+            echo defang config set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
+            defang config set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
         fi
 
         # Set init config variables
         if [ -n "$CONFIG_ENV_VARS_INIT" ]; then
             echo "Initialize configs..."
-            echo defang config "${params[@]}" set --if-not-set -e $CONFIG_ENV_VARS_INIT
-            defang config "${params[@]}" set --if-not-set -e $CONFIG_ENV_VARS_INIT
+            echo defang config set --if-not-set -e $CONFIG_ENV_VARS_INIT
+            defang config set --if-not-set -e $CONFIG_ENV_VARS_INIT
         fi
 
         # Set regular config variables
         if [ -n "$CONFIG_ENV_VARS" ]; then
             echo "Updating configs..."
-            echo defang config "${params[@]}" set -e $CONFIG_ENV_VARS
-            defang config "${params[@]}" set -e $CONFIG_ENV_VARS
+            echo defang config set -e $CONFIG_ENV_VARS
+            defang config set -e $CONFIG_ENV_VARS
         fi
       working-directory: ${{ inputs.cwd }}
       env:
-        COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
         CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
@@ -190,15 +194,6 @@ runs:
       working-directory: ${{ inputs.cwd }}
       run: |
         set -o pipefail
-
-        # Docker Compose (and the Defang CLI) natively read the compose file
-        # list from COMPOSE_FILE, so export that instead of building a
-        # repeated -f/-f/-f list ourselves. COMPOSE_PATH_SEPARATOR pins the
-        # separator to ':' regardless of the runner OS.
-        if [[ -n "$COMPOSE_FILES" ]]; then
-          export COMPOSE_PATH_SEPARATOR=":"
-          export COMPOSE_FILE="${COMPOSE_FILES// /:}"
-        fi
 
         params=()
         if [[ -n "${{ inputs['mode'] }}" ]]; then
@@ -227,7 +222,6 @@ runs:
         fi
       env:
         COMMAND: ${{ inputs['command'] }}
-        COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
         CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
@@ -246,21 +240,20 @@ runs:
 
     - name: Deployment summary
       id: summary
-      if: ${{ inputs['summary'] == 'true' || (inputs['summary'] == '' && inputs['command'] == 'compose up') }}
+      if: ${{ inputs['summary'] == 'true' || (inputs['summary'] == '' && (inputs['command'] == 'compose up' || startsWith(inputs['command'], 'compose up '))) }}
       shell: bash
       working-directory: ${{ inputs.cwd }}
       run: |
         set -o pipefail
 
-        # Docker Compose (and the Defang CLI) natively read the compose file
-        # list from COMPOSE_FILE; see the "Defang $command" step above.
-        if [[ -n "$COMPOSE_FILES" ]]; then
-          export COMPOSE_PATH_SEPARATOR=":"
-          export COMPOSE_FILE="${COMPOSE_FILES// /:}"
+        if ! command -v jq >/dev/null 2>&1; then
+          echo "::notice::jq not found; skipping deployment summary"
+          exit 0
         fi
 
-        # Fetch the deployed services as JSON. Stack/provider/project come from
-        # the environment set earlier, so they don't need to be passed again.
+        # Fetch the deployed services as JSON. Compose files, stack, provider,
+        # and project come from the environment set earlier, so they don't
+        # need to be passed again.
         # Only fall back to an empty array on failure, so a successful run
         # never yields two concatenated JSON values.
         if services=$(defang services --json 2>/dev/null); then
@@ -288,6 +281,4 @@ runs:
             echo "_No services found._"
           fi
         } >> "$GITHUB_STEP_SUMMARY"
-      env:
-        COMPOSE_FILES: ${{ inputs['compose-files'] }}
 
