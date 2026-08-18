@@ -63,9 +63,9 @@ inputs:
     required: false
     default: "true"
   summary:
-    description: "After the command runs, write a table of deployed services to the GitHub job summary and expose the primary public endpoint as the 'endpoint' output. Uses 'defang services --json'."
+    description: "After the command runs, write a table of deployed services to the GitHub job summary and expose the primary public endpoint as the 'endpoint' output. Uses 'defang services --json'. Defaults to enabled when 'command' is the default 'compose up'. Set to 'false' to disable, or 'true' to force-enable for other commands."
     required: false
-    default: "false"
+    default: ""
 
 outputs:
   stdout:
@@ -190,11 +190,17 @@ runs:
       working-directory: ${{ inputs.cwd }}
       run: |
         set -o pipefail
+
+        # Docker Compose (and the Defang CLI) natively read the compose file
+        # list from COMPOSE_FILE, so export that instead of building a
+        # repeated -f/-f/-f list ourselves. COMPOSE_PATH_SEPARATOR pins the
+        # separator to ':' regardless of the runner OS.
+        if [[ -n "$COMPOSE_FILES" ]]; then
+          export COMPOSE_PATH_SEPARATOR=":"
+          export COMPOSE_FILE="${COMPOSE_FILES// /:}"
+        fi
+
         params=()
-        for filename in $COMPOSE_FILES; do
-            params+=("-f")
-            params+=("$filename")
-        done
         if [[ -n "${{ inputs['mode'] }}" ]]; then
           params+=("--mode=${{ inputs['mode'] }}")
         fi
@@ -240,30 +246,41 @@ runs:
 
     - name: Deployment summary
       id: summary
-      if: ${{ inputs['summary'] == 'true' }}
+      if: ${{ inputs['summary'] == 'true' || (inputs['summary'] == '' && inputs['command'] == 'compose up') }}
       shell: bash
       working-directory: ${{ inputs.cwd }}
       run: |
-        params=()
-        for filename in $COMPOSE_FILES; do
-            params+=("-f")
-            params+=("$filename")
-        done
+        set -o pipefail
+
+        # Docker Compose (and the Defang CLI) natively read the compose file
+        # list from COMPOSE_FILE; see the "Defang $command" step above.
+        if [[ -n "$COMPOSE_FILES" ]]; then
+          export COMPOSE_PATH_SEPARATOR=":"
+          export COMPOSE_FILE="${COMPOSE_FILES// /:}"
+        fi
 
         # Fetch the deployed services as JSON. Stack/provider/project come from
         # the environment set earlier, so they don't need to be passed again.
-        services=$(defang services "${params[@]}" --json 2>/dev/null || echo '[]')
+        # Only fall back to an empty array on failure, so a successful run
+        # never yields two concatenated JSON values.
+        if services=$(defang services --json 2>/dev/null); then
+          :
+        else
+          services='[]'
+        fi
 
         # Expose the primary public endpoint (first https:// service) as an output.
         endpoint=$(echo "$services" | jq -r 'map(select((.Endpoint // "") | startswith("https://"))) | .[0].Endpoint // empty')
         echo "endpoint=$endpoint" >> "$GITHUB_OUTPUT"
 
         # Render a services table to the job summary. Public endpoints become
-        # links; internal services are shown as code.
+        # links; internal services are shown as code. Deployments with no
+        # services, or with services but no public endpoint, report
+        # "No services found." per the summary's contract.
         {
           echo "## 🚀 Deployed services"
           echo ""
-          if [ "$(echo "$services" | jq 'length')" -gt 0 ]; then
+          if [ -n "$endpoint" ] && [ "$(echo "$services" | jq 'length')" -gt 0 ]; then
             echo "| Service | Status | Endpoint |"
             echo "|---|---|---|"
             echo "$services" | jq -r '.[] | "| \(.Service) | \(.Status) | " + (if ((.Endpoint // "") | startswith("https://")) then "[\(.Endpoint)](\(.Endpoint))" else "`\(.Endpoint)`" end) + " |"'
