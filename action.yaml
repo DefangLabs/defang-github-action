@@ -62,11 +62,18 @@ inputs:
     description: "Capture the command's stdout as an output. Disable for large deployments to avoid GitHub Actions memory limits."
     required: false
     default: "true"
+  summary:
+    description: "After the command runs, write a table of deployed services to the GitHub job summary and expose the primary public endpoint as the 'endpoint' output. Uses 'defang services --json'."
+    required: false
+    default: "false"
 
 outputs:
   stdout:
     description: "The stdout of the command. Only available when capture-output is 'true'."
     value: ${{ steps.forward-output.outputs.stdout }}
+  endpoint:
+    description: "The primary public https endpoint of the deployed project (best-effort). Only set when 'summary' is 'true'."
+    value: ${{ steps.summary.outputs.endpoint }}
 
 runs:
   using: "composite"
@@ -230,4 +237,40 @@ runs:
         echo "DEFANG_EOF" >> "$GITHUB_OUTPUT"
       env:
         STDOUT: ${{ steps.command.outputs.stdout }}
+
+    - name: Deployment summary
+      id: summary
+      if: ${{ inputs['summary'] == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.cwd }}
+      run: |
+        params=()
+        for filename in $COMPOSE_FILES; do
+            params+=("-f")
+            params+=("$filename")
+        done
+
+        # Fetch the deployed services as JSON. Stack/provider/project come from
+        # the environment set earlier, so they don't need to be passed again.
+        services=$(defang services "${params[@]}" --json 2>/dev/null || echo '[]')
+
+        # Expose the primary public endpoint (first https:// service) as an output.
+        endpoint=$(echo "$services" | jq -r 'map(select((.Endpoint // "") | startswith("https://"))) | .[0].Endpoint // empty')
+        echo "endpoint=$endpoint" >> "$GITHUB_OUTPUT"
+
+        # Render a services table to the job summary. Public endpoints become
+        # links; internal services are shown as code.
+        {
+          echo "## 🚀 Deployed services"
+          echo ""
+          if [ "$(echo "$services" | jq 'length')" -gt 0 ]; then
+            echo "| Service | Status | Endpoint |"
+            echo "|---|---|---|"
+            echo "$services" | jq -r '.[] | "| \(.Service) | \(.Status) | " + (if ((.Endpoint // "") | startswith("https://")) then "[\(.Endpoint)](\(.Endpoint))" else "`\(.Endpoint)`" end) + " |"'
+          else
+            echo "_No services found._"
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+      env:
+        COMPOSE_FILES: ${{ inputs['compose-files'] }}
 

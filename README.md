@@ -127,6 +127,37 @@ jobs:
           capture-output: false
 ```
 
+### Publishing the Deployment Summary
+
+Set `summary: true` to surface the deployment result on the GitHub run instead of leaving it buried in the action log. After the command runs, the action calls `defang services --json` and:
+
+- writes a table of deployed services (public endpoints as links, internal services as code) to the [job summary](https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/), and
+- exposes the primary public `https://` endpoint as the `endpoint` output.
+
+Wire that output into the job's `environment.url` to get a clickable **"View deployment"** link on the run, the Environments tab, and the repo sidebar:
+
+```yaml
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.endpoint }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # [...]
+      - name: Deploy
+        id: deploy
+        uses: DefangLabs/defang-github-action@v2
+        with:
+          command: "compose up"
+          summary: true
+```
+
+Unlike `capture-output`, this writes straight to the job summary (1 MiB per step) rather than through the size-limited step-output channel, and `defang services` output is small and bounded — so it is safe even for large deployments where `capture-output` is disabled.
+
 ### Full Example
 
 Here is a full example of a GitHub workflow that does everything we've discussed so far:
@@ -142,6 +173,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.endpoint }}
     permissions:
       contents: read
       id-token: write
@@ -151,6 +185,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy
+        id: deploy
         uses: DefangLabs/defang-github-action@v2
         with:
           cli-version: v3.5.2
@@ -161,6 +196,7 @@ jobs:
           provider: "aws"  # deprecated in favor of stack:
           stack: "production"
           command: "compose up"
+          summary: true
           verbose: true
         env:
           API_KEY: ${{ secrets.API_KEY }}
