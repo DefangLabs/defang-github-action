@@ -254,9 +254,11 @@ runs:
         # Fetch the deployed services as JSON. Compose files, stack, provider,
         # and project come from the environment set earlier, so they don't
         # need to be passed again.
-        # Only fall back to an empty array on failure, so a successful run
-        # never yields two concatenated JSON values.
-        if services=$(defang services --json 2>/dev/null); then
+        # Fall back to an empty array whenever the command fails OR its
+        # output isn't valid JSON (e.g. a stray CLI banner/warning line) —
+        # this step is best-effort reporting and must never fail the job
+        # over a deployment that already succeeded.
+        if services=$(defang services --json 2>/dev/null) && echo "$services" | jq empty 2>/dev/null; then
           :
         else
           services='[]'
