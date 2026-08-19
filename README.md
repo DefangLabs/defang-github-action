@@ -111,9 +111,9 @@ jobs:
           command: "compose up --project-name my-project"
 ```
 
-### Disabling Output Capture
+### Capturing Output
 
-By default, the action captures the command's stdout as an output (`outputs.stdout`). For large deployments, this can exceed GitHub Actions' memory limits and cause the workflow to fail even though the deployment succeeded. If you don't need the stdout output, disable it:
+Set `capture-output: true` to capture the command's stdout as an output (`outputs.stdout`). This is off by default because large deployments can exceed GitHub Actions' memory limits and cause the workflow to fail even though the deployment succeeded:
 
 ```yaml
 jobs:
@@ -124,8 +124,40 @@ jobs:
       - name: Deploy
         uses: DefangLabs/defang-github-action@v2
         with:
-          capture-output: false
+          capture-output: true
 ```
+
+### Publishing the Deployment Summary
+
+When the command is `compose up` (the default), the action surfaces the deployment result on the GitHub run instead of leaving it buried in the action log. After the command runs, the action calls `defang services --json` and:
+
+- writes a table of deployed services (public endpoints as links, internal services as code) to the [job summary](https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/), and
+- exposes the primary public `https://` endpoint as the `endpoint` output.
+
+Wire that output into the job's `environment.url` to get a clickable **"View deployment"** link on the run, the Environments tab, and the repo sidebar:
+
+```yaml
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.endpoint }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # [...]
+      - name: Deploy
+        id: deploy
+        uses: DefangLabs/defang-github-action@v2
+        with:
+          command: "compose up"
+```
+
+Unlike `capture-output`, this writes straight to the job summary (1 MiB per step) rather than through the size-limited step-output channel, and `defang services` output is small and bounded — so it is safe even for large deployments where `capture-output` is disabled.
+
+Set `summary: "false"` to skip the summary, or `summary: "true"` to force it for commands other than `compose up`.
 
 ### Full Example
 
@@ -142,6 +174,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.endpoint }}
     permissions:
       contents: read
       id-token: write
@@ -151,6 +186,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy
+        id: deploy
         uses: DefangLabs/defang-github-action@v2
         with:
           cli-version: v3.5.2
