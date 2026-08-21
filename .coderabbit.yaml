@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# THROWAWAY PROBE - do not merge. Tests whether a PR head branch can defeat the
+# org-level Global Override for request_changes_workflow.
+reviews:
+  request_changes_workflow: false
