@@ -30,6 +30,10 @@ inputs:
     description: "The compose files to deploy. Format 'file1 file2 file3'"
     required: false
     default: ""
+  env-file:
+    description: "Environment file(s) used for compose interpolation instead of the default .env. Format 'file1 file2 file3'"
+    required: false
+    default: ""
   cwd:
     description: "The directory containing the compose file to deploy."
     required: false
@@ -118,6 +122,8 @@ runs:
         [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['project'] }}" ] && echo "COMPOSE_PROJECT_NAME=${{ inputs['project'] }}" >> $GITHUB_ENV || true
+        # The CLI reads COMPOSE_ENV_FILES (comma-separated) like docker compose; convert the space-separated input.
+        [ -n "$ENV_FILE" ] && echo "COMPOSE_ENV_FILES=$(echo "$ENV_FILE" | tr ' ' ',')" >> $GITHUB_ENV || true
         # Docker Compose (and the Defang CLI) natively read the compose file
         # list from COMPOSE_FILE, so export that once instead of building a
         # repeated -f/-f/-f list in every step. The unquoted echo collapses
@@ -130,6 +136,7 @@ runs:
         fi
       env:
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
+        ENV_FILE: ${{ inputs['env-file'] }}
 
     - name: Login to Defang
       shell: bash
