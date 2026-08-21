@@ -46,3 +46,23 @@ jobs:
           compose-files: ""
           verbose: true
           command: "compose up --dry-run --project-name github-action-test"
+
+  # Standard DefangLabs CI gate.
+  #
+  # One check name that the org ruleset can require in every repo. GitHub rulesets
+  # can only require a literal check name, so the name must be the same everywhere.
+  # This job has no `paths:` filter, so the `ci` check always reports on a PR and
+  # can never hang a merge. A job it needs that is skipped counts as a pass, so the
+  # jobs above may stay path-filtered.
+  #
+  # NOTE: if this repo ever turns on a merge queue, add `merge_group:` to the
+  # triggers above, or the required `ci` check will not report in the queue.
+  ci:
+    needs: [test]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Fail if a needed job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
