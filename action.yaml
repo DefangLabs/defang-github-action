@@ -63,14 +63,21 @@ inputs:
     required: false
     default: "false"
   capture-output:
-    description: "Capture the command's stdout as an output. Disable for large deployments to avoid GitHub Actions memory limits."
+    description: "Capture the command's stdout as the 'stdout' output. Off by default: large deployments can exceed GitHub Actions memory limits."
     required: false
-    default: "true"
+    default: "false"
+  summary:
+    description: "After the command runs, write a table of deployed services to the GitHub job summary and expose the primary public endpoint as the 'endpoint' output. Uses 'defang services --json'. Defaults to enabled when 'command' is the default 'compose up'. Set to 'false' to disable, or 'true' to force-enable for other commands."
+    required: false
+    default: ""
 
 outputs:
   stdout:
     description: "The stdout of the command. Only available when capture-output is 'true'."
     value: ${{ steps.forward-output.outputs.stdout }}
+  endpoint:
+    description: "The primary public https endpoint of the deployed project (best-effort). Only set when the deployment summary runs (see 'summary')."
+    value: ${{ steps.summary.outputs.endpoint }}
 
 runs:
   using: "composite"
@@ -117,7 +124,18 @@ runs:
         [ -n "${{ inputs['project'] }}" ] && echo "COMPOSE_PROJECT_NAME=${{ inputs['project'] }}" >> $GITHUB_ENV || true
         # The CLI reads COMPOSE_ENV_FILES (comma-separated) like docker compose; convert the space-separated input.
         [ -n "$ENV_FILE" ] && echo "COMPOSE_ENV_FILES=$(echo "$ENV_FILE" | tr ' ' ',')" >> $GITHUB_ENV || true
+        # Docker Compose (and the Defang CLI) natively read the compose file
+        # list from COMPOSE_FILE, so export that once instead of building a
+        # repeated -f/-f/-f list in every step. The unquoted echo collapses
+        # any whitespace (spaces or newlines) between filenames before tr
+        # joins them with ':'; COMPOSE_PATH_SEPARATOR pins the separator to
+        # ':' regardless of the runner OS.
+        if [ -n "$COMPOSE_FILES" ]; then
+          echo "COMPOSE_FILE=$(echo $COMPOSE_FILES | tr ' ' ':')" >> $GITHUB_ENV
+          echo "COMPOSE_PATH_SEPARATOR=:" >> $GITHUB_ENV
+        fi
       env:
+        COMPOSE_FILES: ${{ inputs['compose-files'] }}
         ENV_FILE: ${{ inputs['env-file'] }}
 
     - name: Login to Defang
@@ -131,13 +149,6 @@ runs:
       shell: bash
       if: ${{ inputs['config-env-vars'] != '' || inputs['config-vars-init-random'] != '' || inputs['config-env-vars-init'] != '' }}
       run: |
-        # Build compose file parameters
-        params=()
-        for filename in $COMPOSE_FILES; do
-            params+=("-f")
-            params+=("$filename")
-        done
-
         # Check for empty environment variables (only for config vars from env)
         empty=()
         for source in $CONFIG_ENV_VARS $CONFIG_ENV_VARS_INIT; do
@@ -160,26 +171,25 @@ runs:
         # Set random config variables
         if [ -n "$CONFIG_VARS_INIT_RANDOM" ]; then
             echo "Initialize randomly generated configs..."
-            echo defang config "${params[@]}" set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
-            defang config "${params[@]}" set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
+            echo defang config set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
+            defang config set --if-not-set --random $CONFIG_VARS_INIT_RANDOM
         fi
 
         # Set init config variables
         if [ -n "$CONFIG_ENV_VARS_INIT" ]; then
             echo "Initialize configs..."
-            echo defang config "${params[@]}" set --if-not-set -e $CONFIG_ENV_VARS_INIT
-            defang config "${params[@]}" set --if-not-set -e $CONFIG_ENV_VARS_INIT
+            echo defang config set --if-not-set -e $CONFIG_ENV_VARS_INIT
+            defang config set --if-not-set -e $CONFIG_ENV_VARS_INIT
         fi
 
         # Set regular config variables
         if [ -n "$CONFIG_ENV_VARS" ]; then
             echo "Updating configs..."
-            echo defang config "${params[@]}" set -e $CONFIG_ENV_VARS
-            defang config "${params[@]}" set -e $CONFIG_ENV_VARS
+            echo defang config set -e $CONFIG_ENV_VARS
+            defang config set -e $CONFIG_ENV_VARS
         fi
       working-directory: ${{ inputs.cwd }}
       env:
-        COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
         CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
@@ -191,11 +201,8 @@ runs:
       working-directory: ${{ inputs.cwd }}
       run: |
         set -o pipefail
+
         params=()
-        for filename in $COMPOSE_FILES; do
-            params+=("-f")
-            params+=("$filename")
-        done
         if [[ -n "${{ inputs['mode'] }}" ]]; then
           params+=("--mode=${{ inputs['mode'] }}")
         fi
@@ -222,7 +229,6 @@ runs:
         fi
       env:
         COMMAND: ${{ inputs['command'] }}
-        COMPOSE_FILES: ${{ inputs['compose-files'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
         CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
@@ -238,4 +244,50 @@ runs:
         echo "DEFANG_EOF" >> "$GITHUB_OUTPUT"
       env:
         STDOUT: ${{ steps.command.outputs.stdout }}
+
+    - name: Deployment summary
+      id: summary
+      if: ${{ inputs['summary'] == 'true' || (inputs['summary'] == '' && (inputs['command'] == 'compose up' || startsWith(inputs['command'], 'compose up '))) }}
+      shell: bash
+      working-directory: ${{ inputs.cwd }}
+      run: |
+        set -o pipefail
+
+        if ! command -v jq >/dev/null 2>&1; then
+          echo "::notice::jq not found; skipping deployment summary"
+          exit 0
+        fi
+
+        # Fetch the deployed services as JSON. Compose files, stack, provider,
+        # and project come from the environment set earlier, so they don't
+        # need to be passed again.
+        # Fall back to an empty array whenever the command fails OR its
+        # output isn't valid JSON (e.g. a stray CLI banner/warning line) —
+        # this step is best-effort reporting and must never fail the job
+        # over a deployment that already succeeded.
+        if services=$(defang services --json 2>/dev/null) && echo "$services" | jq empty 2>/dev/null; then
+          :
+        else
+          services='[]'
+        fi
+
+        # Expose the primary public endpoint (first https:// service) as an output.
+        endpoint=$(echo "$services" | jq -r 'map(select((.Endpoint // "") | startswith("https://"))) | .[0].Endpoint // empty')
+        echo "endpoint=$endpoint" >> "$GITHUB_OUTPUT"
+
+        # Render a services table to the job summary. Public endpoints become
+        # links; internal services are shown as code. Deployments with no
+        # services, or with services but no public endpoint, report
+        # "No services found." per the summary's contract.
+        {
+          echo "## 🚀 Deployed services"
+          echo ""
+          if [ -n "$endpoint" ] && [ "$(echo "$services" | jq 'length')" -gt 0 ]; then
+            echo "| Service | Status | Endpoint |"
+            echo "|---|---|---|"
+            echo "$services" | jq -r '.[] | "| \(.Service) | \(.Status) | " + (if ((.Endpoint // "") | startswith("https://")) then "[\(.Endpoint)](\(.Endpoint))" else "`\(.Endpoint)`" end) + " |"'
+          else
+            echo "_No services found._"
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
 
