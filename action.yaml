@@ -128,7 +128,15 @@ runs:
         # whitespace-separated input (spaces or newlines, so multiline YAML lists work too).
         # Always write it, even empty, so a prior step's env-file doesn't leak into a later
         # step of the same job that doesn't set one (GITHUB_ENV entries persist job-wide).
-        echo "COMPOSE_ENV_FILES=$(echo $ENV_FILE | xargs | tr ' ' ',')" >> $GITHUB_ENV
+        if [ -n "$ENV_FILE" ]; then
+          if ! normalized_env_files="$(echo $ENV_FILE | xargs | tr ' ' ',')"; then
+            echo "::error::Failed to normalize env-file input" >&2
+            exit 1
+          fi
+          echo "COMPOSE_ENV_FILES=$normalized_env_files" >> $GITHUB_ENV
+        else
+          echo "COMPOSE_ENV_FILES=" >> $GITHUB_ENV
+        fi
         # Docker Compose (and the Defang CLI) natively read the compose file
         # list from COMPOSE_FILE, so export that once instead of building a
         # repeated -f/-f/-f list in every step. The unquoted echo collapses
