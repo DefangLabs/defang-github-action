@@ -63,6 +63,8 @@ jobs:
 
 By default, Defang loads a `.env` file next to your Compose file to resolve `${VARIABLE}` interpolation. To use a different environment file (or several), set the `env-file` input. This mirrors `docker compose --env-file` and, when set, replaces the default `.env`.
 
+Requires Defang CLI `v3.12.0` or newer. Older CLI versions ignore this input and silently fall back to the default `.env` file.
+
 ```yaml
 jobs:
   test:

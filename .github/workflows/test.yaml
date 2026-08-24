@@ -61,6 +61,7 @@ jobs:
       - name: Verify env-file interpolation
         shell: bash
         run: |
+          set -o pipefail
           echo "${STDOUT}" | grep -q "hello-from-env-file" \
             || { echo "expected env-file value not found in output"; exit 1; }
         env:

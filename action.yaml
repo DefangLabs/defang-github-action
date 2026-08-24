@@ -118,12 +118,17 @@ runs:
     - name: Set Defang environment variables
       shell: bash
       run: |
+        set -o pipefail
+
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
         [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['project'] }}" ] && echo "COMPOSE_PROJECT_NAME=${{ inputs['project'] }}" >> $GITHUB_ENV || true
-        # The CLI reads COMPOSE_ENV_FILES (comma-separated) like docker compose; convert the space-separated input.
-        [ -n "$ENV_FILE" ] && echo "COMPOSE_ENV_FILES=$(echo "$ENV_FILE" | tr ' ' ',')" >> $GITHUB_ENV || true
+        # The CLI reads COMPOSE_ENV_FILES (comma-separated) like docker compose; convert the
+        # whitespace-separated input (spaces or newlines, so multiline YAML lists work too).
+        # Always write it, even empty, so a prior step's env-file doesn't leak into a later
+        # step of the same job that doesn't set one (GITHUB_ENV entries persist job-wide).
+        echo "COMPOSE_ENV_FILES=$(echo $ENV_FILE | xargs | tr ' ' ',')" >> $GITHUB_ENV
         # Docker Compose (and the Defang CLI) natively read the compose file
         # list from COMPOSE_FILE, so export that once instead of building a
         # repeated -f/-f/-f list in every step. The unquoted echo collapses
