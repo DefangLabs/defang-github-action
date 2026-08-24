@@ -56,6 +56,7 @@ jobs:
           compose-files: "compose.envfile.yaml"
           env-file: "action.env"
           command: "compose config --project-name github-action-test"
+          capture-output: true
 
       - name: Verify env-file interpolation
         shell: bash
