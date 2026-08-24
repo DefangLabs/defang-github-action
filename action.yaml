@@ -129,9 +129,12 @@ runs:
         # Always write it, even empty, so a prior step's env-file doesn't leak into a later
         # step of the same job that doesn't set one (GITHUB_ENV entries persist job-wide).
         if [ -n "$ENV_FILE" ]; then
-          # `read -a` splits on whitespace without invoking shell globbing/expansion,
-          # so literal filenames (leading '-', wildcard characters) survive intact.
-          read -r -a env_file_parts <<< "$ENV_FILE"
+          # Disable globbing so the unquoted expansion below only word-splits on
+          # IFS (space/tab/newline, so multiline YAML lists work) without
+          # expanding literal filenames that start with '-' or contain wildcards.
+          set -f
+          env_file_parts=($ENV_FILE)
+          set +f
           echo "COMPOSE_ENV_FILES=$(IFS=,; echo "${env_file_parts[*]}")" >> $GITHUB_ENV
         else
           echo "COMPOSE_ENV_FILES=" >> $GITHUB_ENV
