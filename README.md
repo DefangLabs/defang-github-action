@@ -59,6 +59,26 @@ jobs:
           DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
 ```
 
+### Using an Environment File
+
+By default, Defang loads a `.env` file next to your Compose file to resolve `${VARIABLE}` interpolation. To use a different environment file (or several), set the `env-file` input. This mirrors `docker compose --env-file` and, when set, replaces the default `.env`.
+
+Requires Defang CLI `v3.12.0` or newer. Older CLI versions ignore this input and silently fall back to the default `.env` file.
+
+```yaml
+jobs:
+  test:
+    # [...]
+    steps:
+      # [...]
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v2
+        with:
+          env-file: ".env.production"
+```
+
+Pass multiple files whitespace-delimited (`env-file: ".env .env.production"`); later files override earlier ones.
+
 ### Projects in a Subdirectory
 
 If your Compose file is in a different directory than your project root, you can specify the path to the project in the `cwd` input.

@@ -48,3 +48,23 @@ jobs:
           compose-files: ""
           verbose: true
           command: "compose up --dry-run --project-name github-action-test"
+
+      - name: Deploy with env-file
+        id: env-file-test
+        uses: ./
+        continue-on-error: true # Ignore dry run error
+        with:
+          cwd: "./test"
+          compose-files: "compose.envfile.yaml"
+          env-file: "action.env"
+          command: "compose config --project-name github-action-test"
+          capture-output: true
+
+      - name: Verify env-file interpolation
+        shell: bash
+        run: |
+          set -o pipefail
+          echo "${STDOUT}" | grep -q "hello-from-env-file" \
+            || { echo "expected env-file value not found in output"; exit 1; }
+        env:
+          STDOUT: ${{ steps.env-file-test.outputs.stdout }}

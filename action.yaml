@@ -30,6 +30,10 @@ inputs:
     description: "The compose files to deploy. Format 'file1 file2 file3'"
     required: false
     default: ""
+  env-file:
+    description: "Environment file(s) used for compose interpolation instead of the default .env. Format 'file1 file2 file3'"
+    required: false
+    default: ""
   cwd:
     description: "The directory containing the compose file to deploy."
     required: false
@@ -114,10 +118,27 @@ runs:
     - name: Set Defang environment variables
       shell: bash
       run: |
+        set -o pipefail
+
         [ -n "$RUNNER_DEBUG" ] && echo "DEFANG_DEBUG=$RUNNER_DEBUG" >> $GITHUB_ENV || true
         [ -n "${{ inputs['provider'] }}" ] && echo "DEFANG_PROVIDER=${{ inputs['provider'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['stack'] }}" ] && echo "DEFANG_STACK=${{ inputs['stack'] }}" >> $GITHUB_ENV || true
         [ -n "${{ inputs['project'] }}" ] && echo "COMPOSE_PROJECT_NAME=${{ inputs['project'] }}" >> $GITHUB_ENV || true
+        # The CLI reads COMPOSE_ENV_FILES (comma-separated) like docker compose; convert the
+        # whitespace-separated input (spaces or newlines, so multiline YAML lists work too).
+        # Always write it, even empty, so a prior step's env-file doesn't leak into a later
+        # step of the same job that doesn't set one (GITHUB_ENV entries persist job-wide).
+        if [ -n "$ENV_FILE" ]; then
+          # Disable globbing so the unquoted expansion below only word-splits on
+          # IFS (space/tab/newline, so multiline YAML lists work) without
+          # expanding literal filenames that start with '-' or contain wildcards.
+          set -f
+          env_file_parts=($ENV_FILE)
+          set +f
+          echo "COMPOSE_ENV_FILES=$(IFS=,; echo "${env_file_parts[*]}")" >> $GITHUB_ENV
+        else
+          echo "COMPOSE_ENV_FILES=" >> $GITHUB_ENV
+        fi
         # Docker Compose (and the Defang CLI) natively read the compose file
         # list from COMPOSE_FILE, so export that once instead of building a
         # repeated -f/-f/-f list in every step. The unquoted echo collapses
@@ -130,6 +151,7 @@ runs:
         fi
       env:
         COMPOSE_FILES: ${{ inputs['compose-files'] }}
+        ENV_FILE: ${{ inputs['env-file'] }}
 
     - name: Login to Defang
       shell: bash
