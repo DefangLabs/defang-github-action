@@ -58,6 +58,10 @@ inputs:
     description: "Allow upgrading the CD image and Pulumi version to the latest available"
     required: false
     default: "false"
+  build:
+    description: "Pass '--build' to the CLI for deployment commands ('up', 'compose up', 'deploy'). Has no effect on 'down' or other commands, and is skipped if 'command' already contains '--build'. Defaults to current behavior (no '--build')."
+    required: false
+    default: "false"
   capture-output:
     description: "Capture the command's stdout as the 'stdout' output. Off by default: large deployments can exceed GitHub Actions memory limits."
     required: false
@@ -208,6 +212,23 @@ runs:
           y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) params+=("--allow-upgrade") ;;
         esac
 
+        # Only add --build for deployment commands (up/compose up/deploy), and
+        # only if the command doesn't already specify --build itself (an
+        # explicit flag in `command` takes precedence). Other commands (e.g.
+        # down) don't accept --build, so this must stay scoped to deployment.
+        case "$BUILD" in
+          y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1)
+            case "$COMMAND" in
+              up|"up "*|"compose up"|"compose up "*|deploy|"deploy "*)
+                case " $COMMAND " in
+                  *" --build "*|*" --build="*) ;;
+                  *) params+=("--build") ;;
+                esac
+                ;;
+            esac
+            ;;
+        esac
+
         # Unset config vars to avoid Defang CLI warning user that config from shell env is ignored
         unset $CONFIG_VARS_INIT_RANDOM $CONFIG_ENV_VARS $CONFIG_ENV_VARS_INIT dont_complain_on_empty
 
@@ -222,6 +243,7 @@ runs:
         fi
       env:
         COMMAND: ${{ inputs['command'] }}
+        BUILD: ${{ inputs['build'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
         CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}

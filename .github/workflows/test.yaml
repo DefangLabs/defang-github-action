@@ -47,4 +47,5 @@ jobs:
           cwd: "./test"
           compose-files: ""
           verbose: true
+          build: true
           command: "compose up --dry-run --project-name github-action-test"

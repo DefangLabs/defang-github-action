@@ -111,6 +111,22 @@ jobs:
           command: "compose up --project-name my-project"
 ```
 
+### Enabling Source Builds
+
+Set `build: true` to pass `--build` to the CLI for deployment commands (`up`, `compose up`, `deploy`). This has no effect on `down` or other commands, and is skipped if `command` already contains `--build`:
+
+```yaml
+jobs:
+  test:
+    # [...]
+    steps:
+      # [...]
+      - name: Deploy
+        uses: DefangLabs/defang-github-action@v2
+        with:
+          build: true
+```
+
 ### Capturing Output
 
 Set `capture-output: true` to capture the command's stdout as an output (`outputs.stdout`). This is off by default because large deployments can exceed GitHub Actions' memory limits and cause the workflow to fail even though the deployment succeeded:
