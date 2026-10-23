@@ -216,12 +216,12 @@ runs:
         # only if the command doesn't already specify --build itself (an
         # explicit flag in `command` takes precedence). Other commands (e.g.
         # down) don't accept --build, so this must stay scoped to deployment.
-        case "${{ inputs['build'] }}" in
+        case "$BUILD" in
           y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1)
             case "$COMMAND" in
               up|"up "*|"compose up"|"compose up "*|deploy|"deploy "*)
-                case "$COMMAND" in
-                  *--build*) ;;
+                case " $COMMAND " in
+                  *" --build "*|*" --build="*) ;;
                   *) params+=("--build") ;;
                 esac
                 ;;
@@ -243,6 +243,7 @@ runs:
         fi
       env:
         COMMAND: ${{ inputs['command'] }}
+        BUILD: ${{ inputs['build'] }}
         CONFIG_ENV_VARS: ${{ inputs['config-env-vars'] }}
         CONFIG_ENV_VARS_INIT: ${{ inputs['config-env-vars-init'] }}
         CONFIG_VARS_INIT_RANDOM: ${{ inputs['config-vars-init-random'] }}
